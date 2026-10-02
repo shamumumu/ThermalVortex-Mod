@@ -1,0 +1,32 @@
+# Local Codex and tooling state
+.claude/
+.downloads/
+.tools/
+.codex-temp/
+.codex-orchestration/
+
+# Local mod build outputs
+local_mods/
+local_modsThermalVortex/
+
+# Preview/research artifacts not required for building the mod
+ThermalVortexPreviews/
+outputs/
+*.bak-*
+
+# Godot/editor/generated state
+ThermalVortex/.godot/
+
+# Build and diagnostics artifacts
+ThermalVortex/bin/
+ThermalVortex/obj/
+ThermalVortex/publish/
+ThermalVortex/diagnostics/artifacts/
+ThermalVortex/diagnostics/deployment-backups/
+
+# IDE/user-local files
+.idea/
+.vs/
+*.user
+
+local_mods_executor/

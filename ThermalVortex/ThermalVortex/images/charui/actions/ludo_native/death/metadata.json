@@ -1,0 +1,1072 @@
+{
+  "duration_seconds": 2.1,
+  "body_frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "rift_frames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28
+  ],
+  "canvas_body": [
+    806,
+    615
+  ],
+  "canvas_rift": [
+    1120,
+    1120
+  ],
+  "body_reference_height": 549,
+  "body_foot_anchors": [
+    [
+      415.5,
+      588.0
+    ],
+    [
+      418.5,
+      590.0
+    ],
+    [
+      419.5,
+      591.0
+    ],
+    [
+      421.5,
+      593.0
+    ],
+    [
+      422.0,
+      593.0
+    ],
+    [
+      421.5,
+      593.0
+    ],
+    [
+      420.5,
+      586.0
+    ],
+    [
+      420.0,
+      585.0
+    ],
+    [
+      418.5,
+      584.0
+    ],
+    [
+      418.0,
+      584.0
+    ],
+    [
+      416.5,
+      584.0
+    ],
+    [
+      414.5,
+      584.0
+    ],
+    [
+      410.5,
+      584.0
+    ],
+    [
+      409.5,
+      585.0
+    ],
+    [
+      405.5,
+      585.0
+    ],
+    [
+      402.5,
+      585.0
+    ],
+    [
+      403.0,
+      585.0
+    ],
+    [
+      398.0,
+      585.0
+    ],
+    [
+      397.5,
+      585.0
+    ],
+    [
+      397.5,
+      585.0
+    ],
+    [
+      397.5,
+      585.0
+    ],
+    [
+      397.5,
+      585.0
+    ],
+    [
+      398.0,
+      585.0
+    ],
+    [
+      398.0,
+      585.0
+    ],
+    [
+      399.0,
+      585.0
+    ],
+    [
+      399.0,
+      585.0
+    ],
+    [
+      400.0,
+      585.0
+    ],
+    [
+      400.5,
+      585.0
+    ],
+    [
+      400.5,
+      585.0
+    ],
+    [
+      399.5,
+      585.0
+    ],
+    [
+      398.5,
+      585.0
+    ],
+    [
+      398.0,
+      585.0
+    ],
+    [
+      398.0,
+      585.0
+    ],
+    [
+      398.5,
+      585.0
+    ],
+    [
+      398.5,
+      585.0
+    ],
+    [
+      399.5,
+      585.0
+    ]
+  ],
+  "body_scale_multipliers": [
+    1.1135902636916837,
+    1.080708661417323,
+    1.0743639921722115,
+    1.0578034682080926,
+    1.043726235741445,
+    1.0417457305502846,
+    1.018552875695733,
+    1.0091911764705883,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "placement_note": "Boot-band center at alpha > 32; frames 000-008 compensate source enlargement; 009-035 fixed scale.",
+  "alpha": "Original RGBA bytes copied unchanged; no matting or resampling.",
+  "excluded_rift_frames": [
+    0,
+    1,
+    2,
+    3,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "exclusion_reason": "Cyan-white residue in supplied source frames.",
+  "files": [
+    {
+      "layer": "body",
+      "frame": 0,
+      "file": "body/frame_000.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_000.png",
+      "sha256": "6664bdd290eb78f7c1c954a6eeff8126723e169dfa29a29daca302ba16b11b12",
+      "bounds_alpha_32": [
+        231,
+        95,
+        534,
+        588
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 1,
+      "file": "body/frame_001.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_001.png",
+      "sha256": "b236fee7ce372d57def78e230b3ca42bfd8f02e77047a83bec7614e2ddc3acf0",
+      "bounds_alpha_32": [
+        224,
+        82,
+        545,
+        590
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 2,
+      "file": "body/frame_002.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_002.png",
+      "sha256": "c124eb0c63cf6c36b1474b5bb6b54c368fa40dedf2f2309bb4caa0031b4ced49",
+      "bounds_alpha_32": [
+        223,
+        80,
+        548,
+        591
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 3,
+      "file": "body/frame_003.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_003.png",
+      "sha256": "0bcc3951016feb202ff266c5d5e42a472dd9f23c83c56cd636b970744be2ffc8",
+      "bounds_alpha_32": [
+        220,
+        74,
+        555,
+        593
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 4,
+      "file": "body/frame_004.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_004.png",
+      "sha256": "942d875b71b0b332cddbba648aee9dca0d4e47a14a937167d8365d6573f59551",
+      "bounds_alpha_32": [
+        213,
+        67,
+        560,
+        593
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 5,
+      "file": "body/frame_005.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_005.png",
+      "sha256": "bb4920753af3196b6659b14cb77fbda61c8e31b8feb74d9e34179a796ebadce1",
+      "bounds_alpha_32": [
+        214,
+        66,
+        560,
+        593
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 6,
+      "file": "body/frame_006.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_006.png",
+      "sha256": "4b9df0d7059517ac1dda0d430ea4b219c65ead9ee1279994387a87b42603a7a8",
+      "bounds_alpha_32": [
+        202,
+        47,
+        566,
+        586
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 7,
+      "file": "body/frame_007.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_007.png",
+      "sha256": "4bbdcd7603151c93f8a4901ae381839f59606da0fa822ac75e91c5207bc17e98",
+      "bounds_alpha_32": [
+        195,
+        41,
+        567,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 8,
+      "file": "body/frame_008.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_008.png",
+      "sha256": "6e8e39dd94e1950aeb63bb29eec651ed9d35a153bba1fcab0cf555bd0ee410a5",
+      "bounds_alpha_32": [
+        184,
+        35,
+        567,
+        584
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 9,
+      "file": "body/frame_009.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_009.png",
+      "sha256": "041ba79072c0c5dae867c2adeebcf0b198da0b2cbea3080960a880d82a63c2c3",
+      "bounds_alpha_32": [
+        184,
+        34,
+        567,
+        584
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 10,
+      "file": "body/frame_010.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_010.png",
+      "sha256": "42fe56c78ec87090c06d98d5264869487fde4c15f82cdc40a57eed5e84a2a4a6",
+      "bounds_alpha_32": [
+        174,
+        31,
+        564,
+        584
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 11,
+      "file": "body/frame_011.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_011.png",
+      "sha256": "0da51f4122ecd056d212d42fbd91a9cdf39f9ab6590bbac792bb2128a2546b46",
+      "bounds_alpha_32": [
+        167,
+        31,
+        559,
+        584
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 12,
+      "file": "body/frame_012.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_012.png",
+      "sha256": "0d6104409b299f071b8869121c1fd0e0e0ef4e9de458dc5fe924489986c4441a",
+      "bounds_alpha_32": [
+        160,
+        33,
+        550,
+        584
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 13,
+      "file": "body/frame_013.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_013.png",
+      "sha256": "a54c44587835554b8121dc2bb0391f0ea8d7fba802b4878da490cdf8629c0ba2",
+      "bounds_alpha_32": [
+        158,
+        34,
+        549,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 14,
+      "file": "body/frame_014.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_014.png",
+      "sha256": "dc7c50ba52b3c84f3ea5a4a32b3c2eef19a8dd91dd6aa3e0f6bfd19d844b110a",
+      "bounds_alpha_32": [
+        154,
+        35,
+        543,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 15,
+      "file": "body/frame_015.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_015.png",
+      "sha256": "6c25572e9e7419cb097fb8593e445585dbc9216f8ad25a2d3353d988fa1c20f8",
+      "bounds_alpha_32": [
+        153,
+        37,
+        541,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 16,
+      "file": "body/frame_016.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_016.png",
+      "sha256": "3768c455a91923f3833babc723af60280c78af928fe15e43ffdebb412e8ad4ca",
+      "bounds_alpha_32": [
+        153,
+        37,
+        542,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 17,
+      "file": "body/frame_017.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_017.png",
+      "sha256": "fcdd006d35341baa83a3e5042a6767dd38b4ac1bebe726feb197ac57f250266c",
+      "bounds_alpha_32": [
+        152,
+        38,
+        544,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 18,
+      "file": "body/frame_018.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_018.png",
+      "sha256": "89f78c89004c4a93dd10434bfeb13698b5cf02c7009d79d9511b1228952cee85",
+      "bounds_alpha_32": [
+        153,
+        40,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 19,
+      "file": "body/frame_019.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_019.png",
+      "sha256": "8d40349e633c4f0bbc6a73bdd12352f0bb75606bb5c438cd9cc5d6e662a70efe",
+      "bounds_alpha_32": [
+        152,
+        41,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 20,
+      "file": "body/frame_020.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_020.png",
+      "sha256": "dd8e9e4aefede63ea9d53fb2fde879e8591c88e446e0ae19b148093dcf346fee",
+      "bounds_alpha_32": [
+        153,
+        42,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 21,
+      "file": "body/frame_021.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_021.png",
+      "sha256": "0327482a48acfb4d7355816f80c6c3116e1e002ded6479ec4af9667c6f2ecdaf",
+      "bounds_alpha_32": [
+        153,
+        43,
+        546,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 22,
+      "file": "body/frame_022.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_022.png",
+      "sha256": "dfd0a60ee0619ca48c03f42b4209ee81b389848626c78b95fc204b35df584afe",
+      "bounds_alpha_32": [
+        155,
+        42,
+        546,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 23,
+      "file": "body/frame_023.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_023.png",
+      "sha256": "1e0a0d546c71a12d3f0859fe0ba07754e32b5abb35ec5001ff3fd375750eddbd",
+      "bounds_alpha_32": [
+        156,
+        41,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 24,
+      "file": "body/frame_024.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_024.png",
+      "sha256": "489bfd469ebdd6134591e2f5ad09fc4031d11399373fdef0901086f648e1f55a",
+      "bounds_alpha_32": [
+        158,
+        38,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 25,
+      "file": "body/frame_025.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_025.png",
+      "sha256": "2c26ec518b3c39fe3cc84b796dd3784ecbc2bb98131bb6785ac3812157e07271",
+      "bounds_alpha_32": [
+        160,
+        37,
+        544,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 26,
+      "file": "body/frame_026.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_026.png",
+      "sha256": "1fba140fb4a832fd70eb92a3470ff59e9b101aa7ccf271282ff029ba0092fa0d",
+      "bounds_alpha_32": [
+        162,
+        37,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 27,
+      "file": "body/frame_027.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_027.png",
+      "sha256": "75332a840d052fda09fb83929073308d42afc667c64c93e344140173127a4089",
+      "bounds_alpha_32": [
+        163,
+        37,
+        545,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 28,
+      "file": "body/frame_028.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_028.png",
+      "sha256": "72038206bbfb3ad97d6f00088a82101ec12fb0b115f7497ce84a2f71683aefde",
+      "bounds_alpha_32": [
+        164,
+        36,
+        546,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 29,
+      "file": "body/frame_029.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_029.png",
+      "sha256": "e86b8925d6e361eaec256c70a6a6727b9194b583fe6d35bf732330c9a783f485",
+      "bounds_alpha_32": [
+        164,
+        36,
+        547,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 30,
+      "file": "body/frame_030.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_030.png",
+      "sha256": "ce19f4ad2c799f502b7be04936ab0ad335debbcf6f71e4a8a38846850ae2ab7e",
+      "bounds_alpha_32": [
+        161,
+        36,
+        547,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 31,
+      "file": "body/frame_031.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_031.png",
+      "sha256": "3e528d1750f98990a4088187940774a2323e1d7d14fc8ef80fbda1495cc00689",
+      "bounds_alpha_32": [
+        161,
+        36,
+        547,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 32,
+      "file": "body/frame_032.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_032.png",
+      "sha256": "3b31e6668218bdbbbdc7f190a5a6e0da18c92e373093e5b4b8fde9f2f87afb95",
+      "bounds_alpha_32": [
+        157,
+        36,
+        547,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 33,
+      "file": "body/frame_033.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_033.png",
+      "sha256": "ac73d70f6c75541d81c2f2222c17fb7838b2f690cc5b9a61c9baa1a281424e03",
+      "bounds_alpha_32": [
+        153,
+        36,
+        548,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 34,
+      "file": "body/frame_034.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_034.png",
+      "sha256": "5f70700fa0103abf19b1d770dfee8d6ccfb42538471d36f8d710f6880a0525c2",
+      "bounds_alpha_32": [
+        152,
+        37,
+        549,
+        585
+      ]
+    },
+    {
+      "layer": "body",
+      "frame": 35,
+      "file": "body/frame_035.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡身体动作\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_035.png",
+      "sha256": "d54af7d973307e7b1d4ea76dfa1f802139c1a47646656e9cb2b40a591fbc5933",
+      "bounds_alpha_32": [
+        150,
+        37,
+        552,
+        585
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 4,
+      "file": "rift/frame_004.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_004.png",
+      "sha256": "c660f48bcf20f6940e38b5c2993635f5c96b29d67d0e1cba309284cc70672ec6",
+      "bounds_alpha_32": [
+        523,
+        460,
+        599,
+        672
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 5,
+      "file": "rift/frame_005.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_005.png",
+      "sha256": "1e03b59b637ddd562e4048f0740c5d4c709b5a8243148c421d81597ba76d0d75",
+      "bounds_alpha_32": [
+        499,
+        395,
+        623,
+        748
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 6,
+      "file": "rift/frame_006.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_006.png",
+      "sha256": "98d51035597ab16baba0ed6f545e06581a3ab2934f19f1dda54f29da71eb15c3",
+      "bounds_alpha_32": [
+        488,
+        365,
+        632,
+        776
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 7,
+      "file": "rift/frame_007.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_007.png",
+      "sha256": "b30ce2ebd42061851a32292c3f6cef075fc7ea27c17532b59c94bcd990dca54a",
+      "bounds_alpha_32": [
+        469,
+        307,
+        651,
+        833
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 8,
+      "file": "rift/frame_008.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_008.png",
+      "sha256": "af9cd49fc19e6c1324b0c80c46a1449ebc836bcc833582d504e700ef84c2df33",
+      "bounds_alpha_32": [
+        458,
+        276,
+        661,
+        857
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 9,
+      "file": "rift/frame_009.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_009.png",
+      "sha256": "10df69a66d9829225b8c4337edf4fa4af00e4b8324daf7fbf7dfe97ee2e8c1e9",
+      "bounds_alpha_32": [
+        442,
+        227,
+        676,
+        899
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 10,
+      "file": "rift/frame_010.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_010.png",
+      "sha256": "f9c9a7be3424ac26abde46d2a11c2065056f14ae09fc408e25c2c143a4bdd9c7",
+      "bounds_alpha_32": [
+        435,
+        203,
+        684,
+        915
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 11,
+      "file": "rift/frame_011.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_011.png",
+      "sha256": "28b2f4302076fb6cc235deb883ad4a50c475fb1b489bc5da0dcb30bec6e76648",
+      "bounds_alpha_32": [
+        412,
+        160,
+        696,
+        958
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 12,
+      "file": "rift/frame_012.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_012.png",
+      "sha256": "4a602b33e1fe68cfbe02c13e95e6aee6b41a79f5497461d9cd7176fb37f17290",
+      "bounds_alpha_32": [
+        406,
+        140,
+        702,
+        975
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 13,
+      "file": "rift/frame_013.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_013.png",
+      "sha256": "2a9cae52c909d317559ee70327d5a137bd29b60c1f15e4dbbc8e6d3704d85ebf",
+      "bounds_alpha_32": [
+        402,
+        119,
+        710,
+        1001
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 14,
+      "file": "rift/frame_014.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_014.png",
+      "sha256": "2817f2ee582fc78f210315be2ccbdd3655a22dcb69d766fc64331b4a3f066104",
+      "bounds_alpha_32": [
+        395,
+        103,
+        716,
+        1015
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 15,
+      "file": "rift/frame_015.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_015.png",
+      "sha256": "2169025bb2a77f308c1516383fb5c58dfc08aad3d0bbae791ac1c7426986da84",
+      "bounds_alpha_32": [
+        394,
+        100,
+        717,
+        1018
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 16,
+      "file": "rift/frame_016.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_016.png",
+      "sha256": "4e9153b15210e18675edf8a57ef8dbb8f2c177bdb370facd45fb3ecca6376448",
+      "bounds_alpha_32": [
+        393,
+        94,
+        720,
+        1022
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 17,
+      "file": "rift/frame_017.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_017.png",
+      "sha256": "0d2b807d6d74687bcb1ca19f7f83cec50f09def9508c2810dae6bd12baf18dbb",
+      "bounds_alpha_32": [
+        392,
+        93,
+        720,
+        1025
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 18,
+      "file": "rift/frame_018.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_018.png",
+      "sha256": "f95c679de528eb5c3b145df06cab636f287f48d179c3be501109b6691e36e7cd",
+      "bounds_alpha_32": [
+        392,
+        92,
+        720,
+        1025
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 19,
+      "file": "rift/frame_019.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_019.png",
+      "sha256": "95c923e279ee7498999dac7ec9af2ffbe126a91db6ce6a9357040ef8d4152b78",
+      "bounds_alpha_32": [
+        392,
+        93,
+        720,
+        1025
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 20,
+      "file": "rift/frame_020.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_020.png",
+      "sha256": "1134b874c59be986b21c5a95b20bf3ee69838e189d48cfc19a9d4ee04437e67f",
+      "bounds_alpha_32": [
+        392,
+        93,
+        720,
+        1024
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 21,
+      "file": "rift/frame_021.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_021.png",
+      "sha256": "b6189cfc72b7ae1f838fa229a934d4978c2760d79a662fb1cc7fce47055bc74a",
+      "bounds_alpha_32": [
+        393,
+        94,
+        720,
+        1022
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 22,
+      "file": "rift/frame_022.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_022.png",
+      "sha256": "396ed555f753583a13ede41e7d631a455ec77e5593eb225abcdca64e09bdb9be",
+      "bounds_alpha_32": [
+        395,
+        100,
+        718,
+        1018
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 23,
+      "file": "rift/frame_023.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_023.png",
+      "sha256": "27864e718a419fd5b1484beb0569b4baa2bd7445c730ce4258705836aaab5d0a",
+      "bounds_alpha_32": [
+        400,
+        113,
+        715,
+        1003
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 24,
+      "file": "rift/frame_024.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_024.png",
+      "sha256": "ac9bb8ab9b4e2786962604c562a9410512bfa7349d085c38d2fba97013ea2f51",
+      "bounds_alpha_32": [
+        419,
+        162,
+        697,
+        950
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 25,
+      "file": "rift/frame_025.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_025.png",
+      "sha256": "a65564fc79559adb0c25318a6db84ca784a35521429fceed35a2af13efb963fe",
+      "bounds_alpha_32": [
+        431,
+        192,
+        687,
+        920
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 26,
+      "file": "rift/frame_026.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_026.png",
+      "sha256": "ec16eef9b504574075949ddb4206486f6128b2c3a38680ee25ae0ca2ded395cb",
+      "bounds_alpha_32": [
+        459,
+        263,
+        663,
+        855
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 27,
+      "file": "rift/frame_027.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_027.png",
+      "sha256": "57e22cef4a2a40056d364112a9fd675a4b472d6ded135678c48649401f0ce298",
+      "bounds_alpha_32": [
+        488,
+        343,
+        638,
+        784
+      ]
+    },
+    {
+      "layer": "rift",
+      "frame": 28,
+      "file": "rift/frame_028.png",
+      "source": "C:\\Users\\16014\\Downloads\\死亡空间裂缝\\sprite--9px-frames-36-rows-6-cols-6-frames\\frame_028.png",
+      "sha256": "55747844fa0ad4ae73537dcbf7d179440fb08100279476c681b4cb8a48c57ad3",
+      "bounds_alpha_32": [
+        503,
+        389,
+        622,
+        738
+      ]
+    }
+  ]
+}

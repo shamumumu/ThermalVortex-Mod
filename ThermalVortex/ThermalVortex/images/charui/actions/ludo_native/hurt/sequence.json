@@ -1,0 +1,23 @@
+{
+  "frame_count": 25,
+  "fps": 30,
+  "start_frame": 1,
+  "last_motion_frame": 23,
+  "recovery_blend_seconds": 0.1,
+  "duration_seconds": 0.8,
+  "canvas": [
+    768,
+    512
+  ],
+  "foot_anchor": [
+    410.0,
+    498
+  ],
+  "character_height": 483,
+  "release_frame": null,
+  "loop": false,
+  "pattern": "frame_%03d.png",
+  "source_directory": "C:\\Users\\16014\\Downloads\\受击动作\\sprite--9px-frames-25-rows-5-cols-5-frames",
+  "alpha": "source RGBA; byte-identical copy",
+  "timing_basis": "Native Hit restarts immediately; skip blurred entry frame and play 24 frames at 30 fps (0.8 s, adapted near Silent 0.733 s). Source contains no timing metadata."
+}

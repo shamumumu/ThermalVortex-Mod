@@ -1,0 +1,140 @@
+{
+  "canvas": [
+    386,
+    534
+  ],
+  "body_reference_height": 483.0,
+  "source_indices": [
+    0,
+    2,
+    5,
+    8,
+    12,
+    14,
+    16,
+    17
+  ],
+  "frame_starts": [
+    0.0,
+    0.1,
+    0.22,
+    0.36,
+    0.51,
+    0.65,
+    0.79,
+    1.0
+  ],
+  "body_foot_anchors": [
+    [
+      213.5,
+      522.0
+    ],
+    [
+      213.5,
+      521.0
+    ],
+    [
+      214.0,
+      518.0
+    ],
+    [
+      214.0,
+      518.0
+    ],
+    [
+      215.0,
+      524.0
+    ],
+    [
+      215.5,
+      530.0
+    ],
+    [
+      216.0,
+      530.0
+    ],
+    [
+      216.5,
+      532.0
+    ]
+  ],
+  "shield_start_progress": 0.7,
+  "final_palm": [
+    325.0,
+    27.0
+  ],
+  "frames": [
+    {
+      "frame": "frame_000.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_000.png",
+      "sha256": "593d924bd7d89b8c5dac8e9af2685284b832a51ec00646243911cde0aaf8cfd4",
+      "foot_anchor": [
+        213.5,
+        522.0
+      ]
+    },
+    {
+      "frame": "frame_002.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_002.png",
+      "sha256": "2820615c5b337b1bb59e0a7b265400e11808697d93c9be8e4d376ebeab3382ec",
+      "foot_anchor": [
+        213.5,
+        521.0
+      ]
+    },
+    {
+      "frame": "frame_005.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_005.png",
+      "sha256": "0664bdd226d784d61a3f6435c1b6836bef138e963278418a414927e6ba8c00d6",
+      "foot_anchor": [
+        214.0,
+        518.0
+      ]
+    },
+    {
+      "frame": "frame_008.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_008.png",
+      "sha256": "5c601276fe959cf65911ae04455d7276d69ad69dc39b456ed2b2429146d01d39",
+      "foot_anchor": [
+        214.0,
+        518.0
+      ]
+    },
+    {
+      "frame": "frame_012.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_012.png",
+      "sha256": "070c0758f9ec2b4b678b88755aff11cc8e34aefab6d352ba5bea0166451b9822",
+      "foot_anchor": [
+        215.0,
+        524.0
+      ]
+    },
+    {
+      "frame": "frame_014.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_014.png",
+      "sha256": "4cec25e6924147ce5961f112a30ae5a104ab6f7257a4fb38f675af458abd01ee",
+      "foot_anchor": [
+        215.5,
+        530.0
+      ]
+    },
+    {
+      "frame": "frame_016.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_016.png",
+      "sha256": "c395fef1e07ceae7305aa17c2ddde563f326ff61502e00e395dee0ad994fcc24",
+      "foot_anchor": [
+        216.0,
+        530.0
+      ]
+    },
+    {
+      "frame": "frame_017.png",
+      "source": "C:\\Users\\16014\\Downloads\\胜利2\\sprite-max-px-frames-25-rows-5-cols-5-frames\\frame_017.png",
+      "sha256": "eb268cff3465d26c620b0e697b29a588d44b0324e8dfe44699abce363feeb663",
+      "foot_anchor": [
+        216.5,
+        532.0
+      ]
+    }
+  ]
+}

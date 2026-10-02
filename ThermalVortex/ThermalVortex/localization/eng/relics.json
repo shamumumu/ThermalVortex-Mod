@@ -1,0 +1,13 @@
+{
+    "THERMALVORTEX-ARCHAIC_TOOTH.description":  "Upon pickup, remove 1 [gold]Alpha E-Coil[/gold] and 1 [gold]Alpha M-Coil[/gold] to create 1 [gold]Electromagnetic Coil[/gold]. Each upgraded material upgrades it once.",
+    "THERMALVORTEX-ARCHAIC_TOOTH.eventDescription":  "Remove 1 [gold]Alpha E-Coil[/gold] and 1 [gold]Alpha M-Coil[/gold] to create 1 [gold]Electromagnetic Coil[/gold]. Each upgraded material upgrades it once.",
+    "THERMALVORTEX-THERMAL_VORTEX_CORE.title":  "Unfinished Millennium Puzzle",
+    "THERMALVORTEX-THERMAL_VORTEX_CORE.description":  "The Puzzle's missing pieces open onto myriad paths. You have an [gold]Extra Deck[/gold] and can wield the signature mechanics of selected cards from other characters, such as Stars, Orbs, and summoning a companion.",
+    "THERMALVORTEX-THERMAL_VORTEX_CORE.flavor":  "The last pieces have not settled, but old memories already stir in the gaps.",
+    "THERMALVORTEX-ANCIENT_THERMAL_VORTEX_CORE.title":  "Millennium Puzzle",
+    "THERMALVORTEX-ANCIENT_THERMAL_VORTEX_CORE.description":  "With the Puzzle complete, myriad paths converge. You have an [gold]Extra Deck[/gold] and can wield the signature mechanics of selected cards from other characters, such as Stars, Orbs, and summoning a companion. At the opening of each turn, before you draw, return your starting [gold]Fusion[/gold] from your Discard Pile to the top of your Draw Pile, making it the next card you draw.",
+    "THERMALVORTEX-ANCIENT_THERMAL_VORTEX_CORE.flavor":  "When every piece locks into place, another soul wakes in golden light.",
+    "THERMALVORTEX-LAYERED_COIL.title":  "Layered Coil",
+    "THERMALVORTEX-LAYERED_COIL.description":  "The first time a Monster is summoned by a card effect each turn, draw 1 card.",
+    "THERMALVORTEX-LAYERED_COIL.flavor":  "Every layer holds one more charge than it should."
+}

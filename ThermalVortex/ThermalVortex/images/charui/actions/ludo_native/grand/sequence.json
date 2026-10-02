@@ -1,0 +1,35 @@
+{
+  "frame_count": 25,
+  "fps": 16.666666666666668,
+  "duration_seconds": 1.5,
+  "canvas": [
+    768,
+    614
+  ],
+  "foot_anchor": [
+    345,
+    559.2
+  ],
+  "character_height": 504,
+  "release_frame": 12,
+  "loop": false,
+  "alpha": "source RGBA; no matting",
+  "pattern": "frame_%03d.png",
+  "source_directory": "C:\\Users\\16014\\Downloads\\大魔法\\sprite-max-px-frames-25-rows-5-cols-5-frames",
+  "source_placement": {
+    "scale": 1.7721518987341771,
+    "offset": [
+      199.30379746835445,
+      86.68354430379748
+    ],
+    "anchor": [
+      212.0,
+      477
+    ]
+  },
+  "layers": [
+    "rear circle",
+    "native alpha character",
+    "front card / small circle"
+  ]
+}

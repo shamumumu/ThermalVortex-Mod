@@ -1,0 +1,60 @@
+{
+  "source_root": "D:\\新建文件夹\\assets\\assets\\resourcesassetbundle\\duel\\timeline\\duel\\universal\\summon\\summonfusion",
+  "files": [
+    {
+      "source": "materials/EfFusion009.png",
+      "output": "textures\\fusion_swirl_009.png",
+      "sha256": "183746416013fc982df639ffc3035118e4a1a5ae299bcbfa7d2c8cc5570f1f54"
+    },
+    {
+      "source": "materials/EfFusion010.png",
+      "output": "textures\\fusion_swirl_010.png",
+      "sha256": "e6c1f7766a8f4f7fcc0695b4d17ea17655b2315e3a063d4c7dff1fd051271553"
+    },
+    {
+      "source": "textures/EfFusion011.png",
+      "output": "textures\\fusion_swirl_011.png",
+      "sha256": "4a939bd87cbfd02959f5b2371654ab234ba4bf60fad92791d4e7a727ffeda251"
+    },
+    {
+      "source": "materials/EfFusion012.png",
+      "output": "textures\\fusion_swirl_012.png",
+      "sha256": "e97754d4550a3213b5d89e7fbc0f7f5cc891986c4cfd218db401aee72e967279"
+    },
+    {
+      "source": "summonfusionshowunitcard/MaterialUzu01.png",
+      "output": "textures\\material_whirlpool.png",
+      "sha256": "d367bc14a21aa15de014fd0fea37b548ec059b6addc6363e93aa677e34dac1fd"
+    },
+    {
+      "source": "summonfusionshowunitcard/grad.png",
+      "output": "textures\\gradient_mask.png",
+      "sha256": "90c06c5a6e8afb4ccbdefc02c7edad6af1ad9e77b0dfb01781f7a18b57be1ad6"
+    },
+    {
+      "source": "materials/RoundedRectangleCard.png",
+      "output": "textures\\rounded_card_mask.png",
+      "sha256": "abe2e8a1ba21a0c63b15acab60d7e3b5b911fbdb2ab61977d608e45e76cba821"
+    },
+    {
+      "source": "summonfusionshowunitcard/0000Low.png",
+      "output": "textures\\card_back.png",
+      "sha256": "ea3d86efcfb01dbd6ab8d91ab2c49440f95689fc2994aea3b0dfa1ddbc103f55"
+    },
+    {
+      "source": "summonfusionshowunitcard/sf_noise_clouds_01.png",
+      "output": "textures\\cloud_noise.png",
+      "sha256": "21be387d5c62fe0950fe20d598bcaaeb43d73f45e357cd214c7fee1d86a644b3"
+    },
+    {
+      "source": "summonfusionshowunitcard/CardHighlight03.png",
+      "output": "textures\\card_highlight.png",
+      "sha256": "a4848d38993f970c7d69a91154da817fce3a2632c2dded3e172280bac3687663"
+    }
+  ],
+  "missing_components": [
+    "Original particle-system emitter/renderer components and director bindings",
+    "Original audio data (event names alone do not contain sound)",
+    "Original host sequencing between ShowUnitCard and Main"
+  ]
+}

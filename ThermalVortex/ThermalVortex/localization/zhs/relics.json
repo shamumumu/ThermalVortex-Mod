@@ -1,0 +1,13 @@
+{
+    "THERMALVORTEX-ARCHAIC_TOOTH.description":  "拾起时，移除[gold]α号电圈[/gold]和[gold]α号磁圈[/gold]各1张，合成1张[gold]电磁圈[/gold]。每张已升级的素材使其升级1次。",
+    "THERMALVORTEX-ARCHAIC_TOOTH.eventDescription":  "移除[gold]α号电圈[/gold]和[gold]α号磁圈[/gold]各1张，合成1张[gold]电磁圈[/gold]。每张已升级的素材使其升级1次。",
+    "THERMALVORTEX-THERMAL_VORTEX_CORE.title":  "未完成的千年积木",
+    "THERMALVORTEX-THERMAL_VORTEX_CORE.description":  "积木的缺口连通诸般命途。你拥有[gold]额外牌组[/gold]，并可驾驭所选其他角色卡牌的专属机制，如星星、充能球与召唤同伴。",
+    "THERMALVORTEX-THERMAL_VORTEX_CORE.flavor":  "最后的缺块尚未归位，沉睡的记忆仍在缝隙中回响。",
+    "THERMALVORTEX-ANCIENT_THERMAL_VORTEX_CORE.title":  "千年积木",
+    "THERMALVORTEX-ANCIENT_THERMAL_VORTEX_CORE.description":  "积木归位，诸般命途于此交汇。你拥有[gold]额外牌组[/gold]，并可驾驭所选其他角色卡牌的专属机制，如星星、充能球与召唤同伴。每逢回合启幕，在抽牌之前，你弃牌堆中的起始[gold]融合[/gold]必将归于抽牌堆顶，使你下一次抽到的牌必为[gold]融合[/gold]。",
+    "THERMALVORTEX-ANCIENT_THERMAL_VORTEX_CORE.flavor":  "拼图归位之时，另一个灵魂在金色光芒中苏醒。",
+    "THERMALVORTEX-LAYERED_COIL.title":  "叠层线圈",
+    "THERMALVORTEX-LAYERED_COIL.description":  "每回合第一次由卡牌效果召唤怪兽时，抽 1 张牌。",
+    "THERMALVORTEX-LAYERED_COIL.flavor":  "每一层都保存着本不该容纳的电荷。"
+}

@@ -1,0 +1,191 @@
+{
+  "format": 1,
+  "purpose": "Native Spire card appearance for fusion, with all text and energy UI hidden",
+  "original_pack": "D:/steam/steamapps/common/Slay the Spire 2/SlayTheSpire2.pck",
+  "original_scene": "res://scenes/cards/card.tscn",
+  "textures": [
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_frame_attack_s.tres",
+      "atlas": "images/atlases/ui_atlas_0.png",
+      "region": [
+        1320,
+        83,
+        598,
+        844
+      ],
+      "margin": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "size": [
+        598,
+        844
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_frame_skill_s.tres",
+      "atlas": "images/atlases/ui_atlas_0.png",
+      "region": [
+        1221,
+        929,
+        598,
+        844
+      ],
+      "margin": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "size": [
+        598,
+        844
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_frame_power_s.tres",
+      "atlas": "images/atlases/ui_atlas_0.png",
+      "region": [
+        621,
+        929,
+        598,
+        844
+      ],
+      "margin": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "size": [
+        598,
+        844
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_portrait_border_attack_s.tres",
+      "atlas": "images/atlases/ui_atlas_1.png",
+      "region": [
+        1329,
+        1,
+        551,
+        420
+      ],
+      "margin": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "size": [
+        551,
+        420
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_portrait_border_skill_s.tres",
+      "atlas": "images/atlases/ui_atlas_1.png",
+      "region": [
+        1313,
+        423,
+        551,
+        420
+      ],
+      "margin": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "size": [
+        551,
+        420
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_portrait_border_power_s.tres",
+      "atlas": "images/atlases/ui_atlas_1.png",
+      "region": [
+        674,
+        148,
+        551,
+        420
+      ],
+      "margin": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "size": [
+        551,
+        420
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/atlases/ui_atlas.sprites/card/card_banner.tres",
+      "atlas": "images/atlases/ui_atlas_1.png",
+      "region": [
+        674,
+        1,
+        653,
+        145
+      ],
+      "margin": [
+        1,
+        23,
+        2,
+        25
+      ],
+      "size": [
+        655,
+        170
+      ],
+      "runtime_load": true
+    },
+    {
+      "source": "images/ui/cards/card_portrait_border_plaque2.png",
+      "size": [
+        61,
+        37
+      ],
+      "runtime_load": true
+    }
+  ],
+  "shader_sources": [
+    {
+      "file": "art_frame.gdshader",
+      "component": "native_pool_color",
+      "source": "res://shaders/hsv.gdshader",
+      "local_reference": ".codex-temp/card-review/frame-assets/hsv.gdshader",
+      "note": "Retains native RGB to YIQ matrix and row-vector hue rotation; clamps final RGB."
+    },
+    {
+      "file": "art_frame.gdshader",
+      "component": "native_extra_deck_color",
+      "source": "ThermalVortexCode/Cards/ExtraDeckCard.cs:ExtraDeckCardMaterials.ColdWhiteShaderCode",
+      "note": "Same shadow/mid/highlight tints, contrast, edge and highlight formulas/defaults as production extra-deck frame."
+    },
+    {
+      "source": "res://shaders/hsv.gdshader",
+      "note": "Loaded from the installed game for the shared rarity material on TitleBanner, PortraitBorder and TypePlaque.",
+      "runtime_load": true
+    }
+  ],
+  "adapted": [
+    "The native outer silhouette, bevel, rim and lower description panel remain sampled from the source PNG.",
+    "The actual portrait is composed only into the original upper transparent portrait window, preserving its aspect ratio and the frame type's window shape. The lower native description panel stays blank and is not filled with portrait art.",
+    "Shadow, type-specific PortraitBorder, empty TitleBanner and empty TypePlaque are composed in the native card.tscn order and positions. TitleBanner, PortraitBorder and TypePlaque share the native rarity material.",
+    "All text labels are omitted, including card-name text, rules text and type text. Energy icons and numerals are omitted. The factory creates no Label and loads no fonts.",
+    "Unknown portraits use a quiet purple diamond motif inside the native outline; metadata-bearing faces retain their empty banner and type plaque.",
+    "This is a visual snapshot composition, not a live NCard or a captured gameplay UI node."
+  ]
+}

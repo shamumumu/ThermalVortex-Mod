@@ -1,0 +1,11 @@
+{
+  "id": "ThermalVortex",
+  "name": "武藤游戏",
+  "author": "Codex",
+  "description": "围绕怪兽召唤、场上怪兽与额外牌组特殊召唤构筑的武藤游戏自定义角色。",
+  "version": "v0.1.1",
+  "has_pck": true,
+  "has_dll": true,
+  "dependencies": ["BaseLib"],
+  "affects_gameplay": true
+}

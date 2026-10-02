@@ -1,0 +1,108 @@
+﻿<Project Sdk="Godot.NET.Sdk/4.5.1" InitialTargets="CheckDependencyPaths">
+    <Import Project=".\Sts2PathDiscovery.props"/>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>true</ImplicitUsings>
+        <Nullable>disable</Nullable> <!--Makes code analysis regarding null values stricter.-->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <!-- With no enabled Publicize items, Publicizer 2.3.0 emits an empty
+             IgnoresAccessChecksTo assembly name. That makes Godot's generated
+             calls to inherited methods fail during JIT compilation. -->
+        <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
+        <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
+        <PathMap>$(AppOutputBase)=.\</PathMap>
+        <GodotDisabledSourceGenerators>GodotPluginsInitializer</GodotDisabledSourceGenerators>
+        <!-- Builds are artifact-only.  Deployment is owned exclusively by scripts/install-mod.ps1. -->
+        <DeployMod Condition="'$(DeployMod)' == ''">false</DeployMod>
+        <!-- Keep archived visual packs in source without accidentally packing them on a plain build.
+             The explicit resource-install workflow enables the official packer for one build. -->
+        <PckPackerEnabled Condition="'$(PckPackerEnabled)' == ''">false</PckPackerEnabled>
+        <PckPackerSkipped Condition="'$(PckPackerSkipped)' == '' And '$(PckPackerEnabled)' != 'true'">true</PckPackerSkipped>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Diasble architecture mismatch warning; mods are ideally built for all platforms (MSIL)
+             while your local StS2 version will be for your specific platform. -->
+        <NoWarn>$(NoWarn);MSB3270</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup Condition="Exists('$(Sts2DataDir)')" >
+        <Reference Include="0Harmony">
+            <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="sts2">
+            <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="False"> <!--Allows access to originally private/protected members but may (unlikely to) cause errors.-->
+        <Publicize Include="sts2" IncludeVirtualMembers="false" IncludeCompilerGeneratedMembers="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Alchyr.Sts2.BaseLib" Version="3.1.2" PrivateAssets="All"/>
+        <PackageReference Include="Krafs.Publicizer" Version="2.3.0" PrivateAssets="All"/>
+        <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="*" />
+        <PackageReference Include="BSchneppe.StS2.PckPacker" Version="0.1.1" PrivateAssets="All" />
+        <AdditionalFiles Include="ThermalVortex/localization/**/*.json"/> <!-- Used by analyzer -->
+        <EmbeddedResource Include="ThermalVortexCode/RewardPools/Data/*.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="ThermalVortex/**" />
+        <Compile Remove="materials/**" />
+        <Compile Remove="shaders/**" />
+        <Compile Remove="images/**" />
+        <Compile Remove="$(TaskProbeSource)" Condition="'$(TaskProbeSource)' != ''" />
+        <Compile Include="$(TaskProbeSource)"
+                 Link="TaskProbe/%(Filename)%(Extension)"
+                 Condition="'$(TaskProbeSource)' != '' And Exists('$(TaskProbeSource)')" />
+        <EmbeddedResource Remove="ThermalVortex/**" />
+        <EmbeddedResource Remove="materials/**" />
+        <EmbeddedResource Remove="shaders/**" />
+        <EmbeddedResource Remove="images/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Condition="Exists('Directory.Build.props')" Include="Directory.Build.props"/>
+        <None Include=".gitignore" />
+        <None Include="ThermalVortex.json" />
+        <None Include="project.godot"/>
+        <None Include="ThermalVortex/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ThermalVortex\images\card_portraits\big\" />
+      <Folder Include="ThermalVortex\images\powers\big\" />
+      <Folder Include="ThermalVortex\images\relics\big\" />
+    </ItemGroup>
+
+    <Target Name="CheckDependencyPaths" >
+        <Error
+                Text=" Slay the Spire 2 data not found at path '$(Sts2DataDir)'"
+                Condition="'$(Sts2DataDir)' == '' or !Exists('$(Sts2DataDir)')" />
+    </Target>
+
+    <Target Name="ValidateTaskProbeSource" BeforeTargets="CoreCompile" Condition="'$(TaskProbeSource)' != ''">
+        <Error Text="TaskProbeSource must name an existing C# source file: '$(TaskProbeSource)'."
+               Condition="!Exists('$(TaskProbeSource)')" />
+    </Target>
+
+    <Target Name="RejectDirectDeployment" BeforeTargets="Build;Publish" Condition="'$(DeployMod)' == 'true'">
+        <Error Text="Direct MSBuild deployment has been retired. Run scripts/install-mod.ps1 instead." />
+    </Target>
+
+    <Target Name="NeedGodotForPublish" BeforeTargets="Publish">
+        <Error Text=" Godot path must be set up before publishing; Godot not found at path '$(GodotPath)'. Check Directory.Build.props file."
+               Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')"/>
+    </Target>
+
+    <Target Name="GodotPublish" AfterTargets="Publish" Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
+        <Message Text="Exporting Godot .pck to the publish output" Importance="high"/>
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;BasicExport&quot; &quot;$(PublishDir)$(MSBuildProjectName).pck&quot;"
+              EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
+              ContinueOnError="WarnAndContinue"/>
+    </Target>
+</Project>

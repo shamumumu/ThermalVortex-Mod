@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="yugi_death_recall.gd" id="1_player"]
+
+[node name="YugiDeathRecall" type="Node2D"]
+script = ExtResource("1_player")
+
+[node name="RiftBack" type="Sprite2D" parent="."]
+centered = false
+
+[node name="Body" type="Sprite2D" parent="."]
+z_index = 1
+centered = false
+
+[node name="RiftFront" type="Sprite2D" parent="."]
+z_index = 2
+centered = false
