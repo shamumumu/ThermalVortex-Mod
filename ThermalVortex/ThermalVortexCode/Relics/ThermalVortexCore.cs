@@ -60,8 +60,6 @@ public class ThermalVortexCore : ThermalVortexRelic
     private const string MillenniumMasterKeySaveId = "MillenniumMasterKey";
     private const string EvilExodiaSaveId = "EvilExodia";
     private const string ExodiaGuardianSaveId = "ExodiaGuardian";
-    public const int MaxOwnedExtraDeckCards = 10;
-    private const int ExtraDeckRewardOptionCount = 3;
 
     private List<ExtraDeckEntry> _ownedExtraDeck = [new(typeof(Detonation), 0)];
     private string _ownedExtraDeckLoadFailure;
@@ -82,8 +80,7 @@ public class ThermalVortexCore : ThermalVortexRelic
     private int _damageReceivedThisCombat;
     private Dictionary<uint, int> _enemyAttackDamageThisCombat = [];
     private int _raReviveCount;
-    private static readonly System.Reflection.FieldInfo CardRewardSynchronizerField =
-        typeof(CardReward).GetField("_synchronizer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+    private int _extraDeckPackPurchases;
 
     private enum ExtraDeckSummonMode
     {
@@ -207,7 +204,6 @@ public class ThermalVortexCore : ThermalVortexRelic
         ? _extraDeck.Count
         : _ownedExtraDeck.Count;
     internal bool IsCombatExtraDeckPreparedForDisplay => IsCombatExtraDeckPrepared();
-    internal bool CanAcceptExtraDeckReward => _ownedExtraDeck.Count < MaxOwnedExtraDeckCards;
     internal bool IsConstructedRewardPoolEnabled => _rewardPoolDefinition?.IsEnabled == true;
     internal RewardPoolDefinition CurrentRewardPoolDefinition =>
         (_rewardPoolDefinition ?? RewardPoolDefinition.Standard).Clone();
@@ -220,6 +216,7 @@ public class ThermalVortexCore : ThermalVortexRelic
     public override RelicRarity Rarity => RelicRarity.Starter;
     protected override string RelicIconFileName => "unfinished_millennium_puzzle.png";
     protected override string RelicIconOutlineFileName => "unfinished_millennium_puzzle_outline.png";
+    internal virtual bool HandlesFusionInOpeningDraw => true;
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips
     {
@@ -276,6 +273,7 @@ public class ThermalVortexCore : ThermalVortexRelic
         _damageReceivedThisCombat = 0;
         _enemyAttackDamageThisCombat.Clear();
         _raReviveCount = 0;
+        _extraDeckPackPurchases = 0;
     }
 
     public override RelicModel GetUpgradeReplacement()
@@ -300,6 +298,7 @@ public class ThermalVortexCore : ThermalVortexRelic
         _hasRewardPoolOrbSlotContributionMetadata = source._hasRewardPoolOrbSlotContributionMetadata;
         SelfDamageTakenThisRunSave = source.SelfDamageTakenThisRunSave;
         RaReviveCountSave = source.RaReviveCountSave;
+        ExtraDeckPackPurchasesSave = source.ExtraDeckPackPurchasesSave;
         _extraDeck.Clear();
         _extraDeck.AddRange(source._extraDeck.Select(entry => entry.Clone()));
         _extraDeckCombat = source._extraDeckCombat;
@@ -375,6 +374,13 @@ public class ThermalVortexCore : ThermalVortexRelic
     {
         get => _raReviveCount;
         set => _raReviveCount = Math.Max(0, value);
+    }
+
+    [SavedProperty]
+    public int ExtraDeckPackPurchasesSave
+    {
+        get => _extraDeckPackPurchases;
+        set => _extraDeckPackPurchases = Math.Max(0, value);
     }
 
     internal void ApplyRewardPoolDefinition(RewardPoolDefinition definition)
@@ -504,6 +510,26 @@ public class ThermalVortexCore : ThermalVortexRelic
         ClearCombatExtraDeck();
         CyberSeries.ResetCombat(Owner);
         return Task.CompletedTask;
+    }
+
+    public override async Task BeforeHandDrawLate(Player player, PlayerChoiceContext ctx, ICombatState combatState)
+    {
+        if (!HandlesFusionInOpeningDraw || !ReferenceEquals(player, Owner)
+            || player.PlayerCombatState is not { } playerCombatState
+            || !MonsterFieldService.CaptureMaterialUseValidity(player)())
+            return;
+
+        var hand = playerCombatState.Hand.Cards;
+        if (hand.Count >= CardPile.MaxCardsInHand || hand.Any(card => card is XyzSummon))
+            return;
+
+        var fusion = CardPile.GetCards(player, PileType.Draw).OfType<XyzSummon>().FirstOrDefault()
+            ?? CardPile.GetCards(player, PileType.Discard).OfType<XyzSummon>().FirstOrDefault();
+        if (fusion is null)
+            return;
+
+        Flash();
+        await CardPileCmd.Add(fusion, PileType.Hand, CardPilePosition.Top, this, false);
     }
 
     internal static void ClearAllCombatState()
@@ -1067,32 +1093,17 @@ public class ThermalVortexCore : ThermalVortexRelic
     public override bool TryModifyRewards(Player player, List<Reward> rewards, AbstractRoom room)
     {
         if (player != Owner
-            || room is not CombatRoom
-            || !CanAcceptExtraDeckReward)
+            || player.RunState is not RunState
+            || room is not CombatRoom combatRoom
+            || rewards.OfType<CardReward>().Any(IsExtraDeckReward)
+            || !ExtraDeckPacks.ShouldOfferCombatPack(player, combatRoom))
             return false;
 
-        if (player.RunState is not RunState runState)
+        var cards = ExtraDeckPacks.Create(player, room, ExtraDeckPackSource.Combat);
+        if (cards.Count == 0)
             return false;
 
-        if (rewards.OfType<CardReward>().Any(IsExtraDeckReward))
-            return false;
-
-        var sourceReward = rewards.OfType<CardReward>().FirstOrDefault();
-        var synchronizer = TryGetSynchronizer(sourceReward);
-        if (synchronizer is null)
-            return false;
-
-        var creationOptions = CardCreationOptions.ForRoom(player, room.RoomType);
-        var extraDeckCards = CreateXyzRewardCards(runState, player, creationOptions, ExtraDeckRewardOptionCount);
-        if (extraDeckCards.Count < ExtraDeckRewardOptionCount)
-            return false;
-
-        var reward = new CardReward(extraDeckCards, CardCreationSource.Encounter, player, creationOptions, synchronizer)
-        {
-            CanReroll = false
-        };
-
-        rewards.Add(reward);
+        rewards.Add(new ExtraDeckCombatPackReward(player, room, cards));
         return true;
     }
 
@@ -1102,47 +1113,19 @@ public class ThermalVortexCore : ThermalVortexRelic
         return cards is { Count: > 0 } && cards.All(IsExtraDeckDisplayCard);
     }
 
-    private static PlayerChoiceSynchronizer TryGetSynchronizer(CardReward reward) =>
-        reward is null ? null : CardRewardSynchronizerField?.GetValue(reward) as PlayerChoiceSynchronizer;
+    public override bool ShouldAddToDeck(CardModel card) => !TryGrantOwnedExtraDeckCard(card);
 
-    private IReadOnlyList<CardModel> CreateXyzRewardCards(
-        RunState runState,
-        Player player,
-        CardCreationOptions creationOptions,
-        int count)
-    {
-        var cards = new List<CardModel>();
-        var candidates = RewardPoolCatalog
-            .GetExtraCandidates()
-            .Where(IsExtraDeckRewardAllowed)
-            .ToList();
-        var rng = creationOptions.RngOverride ?? player.PlayerRng.Rewards;
-
-        while (cards.Count < count && candidates.Count > 0)
-        {
-            var selected = rng?.NextItem(candidates) ?? candidates[0];
-            var card = runState.CreateCard(selected, player);
-            candidates.Remove(selected);
-            if (card is not null)
-                cards.Add(card);
-        }
-
-        return cards;
-    }
-
-    public override bool ShouldAddToDeck(CardModel card)
+    internal bool TryGrantOwnedExtraDeckCard(CardModel card)
     {
         if (card is null || !ReferenceEquals(card.Owner, Owner))
-            return true;
+            return false;
 
         var cardType = GetXyzMonsterType(card);
         if (cardType is null)
-            return true;
+            return false;
 
-        if (CanAcceptExtraDeckReward)
-            _ownedExtraDeck.Add(CreateExtraDeckEntryFromCard(cardType, card));
-
-        return false;
+        _ownedExtraDeck.Add(CreateExtraDeckEntryFromCard(cardType, card));
+        return true;
     }
 
     public static bool IsExtraDeckDisplayCard(CardModel card) =>
@@ -1640,12 +1623,7 @@ public class ThermalVortexCore : ThermalVortexRelic
 
     private void ReplaceOwnedExtraDeck(IEnumerable<ExtraDeckEntry> deck, bool allowEmpty = false)
     {
-        // Validate every payload before applying the old limit for unenchanted
-        // entries. An enchanted overflow must never be silently truncated.
-        var parsedDeck = deck.Select(entry => entry.CloneOwned()).ToList();
-        if (parsedDeck.Skip(MaxOwnedExtraDeckCards).Any(entry => HasSerializableEnchantment(entry.Enchantment)))
-            throw new InvalidDataException("The Extra Deck save has enchanted entries beyond the owned card limit; no entries were discarded.");
-        var loadedDeck = parsedDeck.Take(MaxOwnedExtraDeckCards).ToList();
+        var loadedDeck = deck.Select(entry => entry.CloneOwned()).ToList();
         if (loadedDeck.Count == 0 && !allowEmpty)
             loadedDeck.Add(new ExtraDeckEntry(typeof(Detonation), 0));
 

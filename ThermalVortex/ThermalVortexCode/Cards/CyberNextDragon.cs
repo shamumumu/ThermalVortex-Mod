@@ -67,17 +67,17 @@ public class CyberNextDragon : MonsterCard, ICyberMonster, ICyberDevourStats
         return MonsterFieldService.CanPlaceOnFieldAfterRemoving(this, materials);
     }
 
-    protected override PileType GetResultPileTypeForCardPlay()
+    protected override CardLocation GetResultLocationForCardPlay()
     {
         var owner = TryGetOwner();
         if (owner is null)
-            return base.GetResultPileTypeForCardPlay();
+            return base.GetResultLocationForCardPlay();
 
         var materials = NonCyberFieldMonsters();
         if (!MonsterFieldService.CanPlaceOnFieldAfterRemoving(this, materials))
-            return base.GetResultPileTypeForCardPlay();
+            return base.GetResultLocationForCardPlay();
 
-        return GetBaseResultPileWithProjectedMaterials(owner, materials);
+        return GetBaseResultLocationWithProjectedMaterials(owner, materials);
     }
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
@@ -147,12 +147,12 @@ public class CyberNextDragon : MonsterCard, ICyberMonster, ICyberDevourStats
         return base.IsPlayable;
     }
 
-    private PileType GetBaseResultPileWithProjectedMaterials(
+    private CardLocation GetBaseResultLocationWithProjectedMaterials(
         Player owner,
         IReadOnlyCollection<CardModel> materials)
     {
         using var capacity = MonsterFieldService.PushTemporaryCapacityBonus(owner, materials.Count);
-        return base.GetResultPileTypeForCardPlay();
+        return base.GetResultLocationForCardPlay();
     }
 
     internal int GetDamageMaterialCount(int? previewMaterialCount = null) =>

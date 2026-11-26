@@ -1,12 +1,10 @@
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
-using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using System.Threading;
@@ -55,268 +53,6 @@ internal static class MonsterFieldAttackContextPatch
     {
         __state?.Dispose();
         return __exception;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(Creature),
-    typeof(decimal),
-    typeof(ValueProp),
-    typeof(CardModel)
-})]
-internal static class MonsterFieldSingleCardSourceDamageGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        Creature __1,
-        decimal __2,
-        ValueProp __3,
-        CardModel __4,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        if (!MonsterFieldDamageGuard.CanGuard(__1, null))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardSingleAsync(__0, __1, __2, __3, __4);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(Creature),
-    typeof(decimal),
-    typeof(ValueProp),
-    typeof(Creature)
-})]
-internal static class MonsterFieldSingleDamageGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        Creature __1,
-        decimal __2,
-        ValueProp __3,
-        Creature __4,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        if (!MonsterFieldDamageGuard.CanGuard(__1, __4))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardSingleAsync(__0, __1, __2, __3, __4);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(Creature),
-    typeof(decimal),
-    typeof(ValueProp),
-    typeof(Creature),
-    typeof(CardModel)
-})]
-internal static class MonsterFieldSingleCardDamageGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        Creature __1,
-        decimal __2,
-        ValueProp __3,
-        Creature __4,
-        CardModel __5,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        if (!MonsterFieldDamageGuard.CanGuard(__1, __4))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardSingleAsync(__0, __1, __2, __3, __4, __5);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(IEnumerable<Creature>),
-    typeof(decimal),
-    typeof(ValueProp),
-    typeof(Creature)
-})]
-internal static class MonsterFieldMultiDamageGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        IEnumerable<Creature> __1,
-        decimal __2,
-        ValueProp __3,
-        Creature __4,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        var targets = __1?.ToList() ?? [];
-        if (!targets.Any(target => MonsterFieldDamageGuard.CanGuard(target, __4)))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardMultipleAsync(__0, targets, __2, __3, __4);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(IEnumerable<Creature>),
-    typeof(decimal),
-    typeof(ValueProp),
-    typeof(Creature),
-    typeof(CardModel)
-})]
-internal static class MonsterFieldMultiCardDamageGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        IEnumerable<Creature> __1,
-        decimal __2,
-        ValueProp __3,
-        Creature __4,
-        CardModel __5,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        var targets = __1?.ToList() ?? [];
-        if (!targets.Any(target => MonsterFieldDamageGuard.CanGuard(target, __4)))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardMultipleAsync(__0, targets, __2, __3, __4, __5);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(Creature),
-    typeof(DamageVar),
-    typeof(CardModel)
-})]
-internal static class MonsterFieldSingleDamageVarCardSourceGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        Creature __1,
-        DamageVar __2,
-        CardModel __3,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        if (!MonsterFieldDamageGuard.CanGuard(__1, null))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardSingleAsync(__0, __1, __2, __3);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(Creature),
-    typeof(DamageVar),
-    typeof(Creature)
-})]
-internal static class MonsterFieldSingleDamageVarGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        Creature __1,
-        DamageVar __2,
-        Creature __3,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        if (!MonsterFieldDamageGuard.CanGuard(__1, __3))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardSingleAsync(__0, __1, __2, __3);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(Creature),
-    typeof(DamageVar),
-    typeof(Creature),
-    typeof(CardModel)
-})]
-internal static class MonsterFieldSingleDamageVarCardGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        Creature __1,
-        DamageVar __2,
-        Creature __3,
-        CardModel __4,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        if (!MonsterFieldDamageGuard.CanGuard(__1, __3))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardSingleAsync(__0, __1, __2, __3, __4);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(IEnumerable<Creature>),
-    typeof(DamageVar),
-    typeof(Creature)
-})]
-internal static class MonsterFieldMultiDamageVarGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        IEnumerable<Creature> __1,
-        DamageVar __2,
-        Creature __3,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        var targets = __1?.ToList() ?? [];
-        if (!targets.Any(target => MonsterFieldDamageGuard.CanGuard(target, __3)))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardMultipleAsync(__0, targets, __2, __3);
-        return false;
-    }
-}
-
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
-{
-    typeof(PlayerChoiceContext),
-    typeof(IEnumerable<Creature>),
-    typeof(DamageVar),
-    typeof(Creature),
-    typeof(CardModel)
-})]
-internal static class MonsterFieldMultiDamageVarCardGuardPatch
-{
-    private static bool Prefix(
-        PlayerChoiceContext __0,
-        IEnumerable<Creature> __1,
-        DamageVar __2,
-        Creature __3,
-        CardModel __4,
-        ref Task<IEnumerable<DamageResult>> __result)
-    {
-        var targets = __1?.ToList() ?? [];
-        if (!targets.Any(target => MonsterFieldDamageGuard.CanGuard(target, __3)))
-            return true;
-
-        __result = MonsterFieldDamageGuard.GuardMultipleAsync(__0, targets, __2, __3, __4);
-        return false;
     }
 }
 
@@ -378,21 +114,14 @@ internal static class MonsterFieldDamageGuard
         return new RestoreAttackContext(previousAttack, previousAttackRevival);
     }
 
-    internal static bool CanGuard(Creature target, Creature source)
-    {
-        if (SuppressionDepth.Value > 0 || target?.IsPlayer != true)
-            return false;
+    internal static bool CanGuardAttack(Creature source) =>
+        SuppressionDepth.Value == 0
+        && CurrentAttack.Value?.Creature is { IsEnemy: true } attacker
+        && (source is null || ReferenceEquals(source, attacker));
 
-        var currentAttack = CurrentAttack.Value;
-        if (currentAttack?.Creature?.IsEnemy != true)
-            return false;
-
-        if (source is not null && !ReferenceEquals(source, currentAttack.Creature))
-            return false;
-
-        return MonsterFieldService.Count(target.Player) > 0
-            || GetAttackRevival(target.Player) is not null;
-    }
+    internal static bool HasFieldGuard(Creature target) =>
+        target?.IsPlayer == true
+        && (MonsterFieldService.Count(target.Player) > 0 || GetAttackRevival(target.Player) is not null);
 
     internal static void PresentPlayerHpImpact(DamageResult result, ValueProp props, Creature source)
     {
@@ -468,111 +197,22 @@ internal static class MonsterFieldDamageGuard
         }
     }
 
-    internal static Task<IEnumerable<DamageResult>> GuardSingleAsync(
+    internal static async Task<IEnumerable<DamageResult>> GuardNativeDamageAsync(
         PlayerChoiceContext ctx,
-        Creature target,
-        decimal damage,
-        ValueProp props,
-        CardModel card) =>
-        GuardSingleCoreAsync(
-            ctx,
-            target,
-            damage,
-            props,
-            (remainingDamage, residualProps) =>
-                CreatureCmd.Damage(ctx, target, remainingDamage, residualProps, card));
-
-    internal static Task<IEnumerable<DamageResult>> GuardSingleAsync(
-        PlayerChoiceContext ctx,
-        Creature target,
-        decimal damage,
-        ValueProp props,
-        Creature source) =>
-        GuardSingleCoreAsync(
-            ctx,
-            target,
-            damage,
-            props,
-            (remainingDamage, residualProps) =>
-                CreatureCmd.Damage(ctx, target, remainingDamage, residualProps, source));
-
-    internal static Task<IEnumerable<DamageResult>> GuardSingleAsync(
-        PlayerChoiceContext ctx,
-        Creature target,
-        decimal damage,
-        ValueProp props,
-        Creature source,
-        CardModel card) =>
-        GuardSingleCoreAsync(
-            ctx,
-            target,
-            damage,
-            props,
-            (remainingDamage, residualProps) =>
-                CreatureCmd.Damage(ctx, target, remainingDamage, residualProps, source, card));
-
-    internal static Task<IEnumerable<DamageResult>> GuardSingleAsync(
-        PlayerChoiceContext ctx,
-        Creature target,
-        DamageVar damage,
-        CardModel card) =>
-        GuardSingleCoreAsync(
-            ctx,
-            target,
-            ResolveDamage(damage),
-            ResolveProps(damage),
-            (remainingDamage, residualProps) =>
-                CreatureCmd.Damage(ctx, target, remainingDamage, residualProps, card));
-
-    internal static Task<IEnumerable<DamageResult>> GuardSingleAsync(
-        PlayerChoiceContext ctx,
-        Creature target,
-        DamageVar damage,
-        Creature source) =>
-        GuardSingleCoreAsync(
-            ctx,
-            target,
-            ResolveDamage(damage),
-            ResolveProps(damage),
-            (remainingDamage, residualProps) =>
-                CreatureCmd.Damage(ctx, target, remainingDamage, residualProps, source));
-
-    internal static Task<IEnumerable<DamageResult>> GuardSingleAsync(
-        PlayerChoiceContext ctx,
-        Creature target,
-        DamageVar damage,
-        Creature source,
-        CardModel card) =>
-        GuardSingleCoreAsync(
-            ctx,
-            target,
-            ResolveDamage(damage),
-            ResolveProps(damage),
-            (remainingDamage, residualProps) =>
-                CreatureCmd.Damage(ctx, target, remainingDamage, residualProps, source, card));
-
-    private static Task<IEnumerable<DamageResult>> GuardSingleCoreAsync(
-        PlayerChoiceContext ctx,
-        Creature target,
-        decimal damage,
-        ValueProp props,
-        Func<decimal, ValueProp, Task<IEnumerable<DamageResult>>> applyNativeDamage,
-        object attackSegmentToken = null) =>
-        GuardNativeDamageAsync(ctx, [target], () => applyNativeDamage(damage, props), attackSegmentToken);
-
-    private static async Task<IEnumerable<DamageResult>> GuardNativeDamageAsync(
-        PlayerChoiceContext ctx,
-        IReadOnlyList<Creature> targets,
-        Func<Task<IEnumerable<DamageResult>>> applyNativeDamage,
-        object attackSegmentToken = null)
+        IReadOnlyList<DamageTargetData> targets,
+        Func<Task<IEnumerable<DamageResult>>> applyNativeDamage)
     {
         var previousGuard = CurrentNativeGuard.Value;
         var previousDepth = NativeDamageCallDepth.Value;
-        var token = attackSegmentToken ?? new object();
+        var token = new object();
         var context = new NativeDamageGuardContext();
         var attackRevival = CurrentAttackRevival.Value;
-        foreach (var target in targets.Where(target => CanGuard(target, CurrentAttack.Value?.Creature)))
+        foreach (var data in targets)
         {
+            var target = data.target;
+            if (!HasFieldGuard(target))
+                continue;
+
             context.States[target] = new NativeDamageGuardState(ctx, target, CurrentAttack.Value, token);
             attackRevival?.BeginSegment(target.Player, token);
         }
@@ -597,44 +237,12 @@ internal static class MonsterFieldDamageGuard
         }
     }
 
-    internal static Task<IEnumerable<DamageResult>> GuardMultipleAsync(
-        PlayerChoiceContext ctx,
-        IReadOnlyList<Creature> targets,
-        decimal damage,
-        ValueProp props,
-        Creature source) =>
-        GuardNativeDamageAsync(ctx, targets, () => CreatureCmd.Damage(ctx, targets, damage, props, source));
-
-    internal static Task<IEnumerable<DamageResult>> GuardMultipleAsync(
-        PlayerChoiceContext ctx,
-        IReadOnlyList<Creature> targets,
-        decimal damage,
-        ValueProp props,
-        Creature source,
-        CardModel card) =>
-        GuardNativeDamageAsync(ctx, targets, () => CreatureCmd.Damage(ctx, targets, damage, props, source, card));
-
-    internal static Task<IEnumerable<DamageResult>> GuardMultipleAsync(
-        PlayerChoiceContext ctx,
-        IReadOnlyList<Creature> targets,
-        DamageVar damage,
-        Creature source) =>
-        GuardNativeDamageAsync(ctx, targets, () => CreatureCmd.Damage(ctx, targets, damage, source));
-
-    internal static Task<IEnumerable<DamageResult>> GuardMultipleAsync(
-        PlayerChoiceContext ctx,
-        IReadOnlyList<Creature> targets,
-        DamageVar damage,
-        Creature source,
-        CardModel card) =>
-        GuardNativeDamageAsync(ctx, targets, () => CreatureCmd.Damage(ctx, targets, damage, source, card));
-
     private static async Task<MonsterFieldAttackDamageResult> GuardDamage(
         PlayerChoiceContext ctx,
         Creature target,
         decimal damage,
         ValueProp props,
-        AbstractModel source,
+        MonsterModel source,
         object attackSegmentToken)
     {
         // Capture draw obligations before this hit can destroy the source
@@ -652,7 +260,7 @@ internal static class MonsterFieldDamageGuard
 
         var canBlock = (props & ValueProp.Unblockable) != ValueProp.Unblockable;
         if (canBlock)
-            remainingDamage = await AbsorbBlock(target, remainingDamage, "before_monsters");
+            remainingDamage = await AbsorbBlock(ctx, target, source.Creature, remainingDamage, "before_monsters");
 
         var result = await MonsterFieldHealthService.AbsorbAttackDamageDetailed(
             ctx,
@@ -670,7 +278,9 @@ internal static class MonsterFieldDamageGuard
             return result;
 
         var remainingAfterTriggeredBlock = await AbsorbBlock(
+            ctx,
             target,
+            source.Creature,
             result.RemainingDamage,
             "after_monster_triggers");
         return new MonsterFieldAttackDamageResult(
@@ -679,7 +289,9 @@ internal static class MonsterFieldDamageGuard
     }
 
     private static async Task<int> AbsorbBlock(
+        PlayerChoiceContext ctx,
         Creature target,
+        Creature source,
         int incomingDamage,
         string phase)
     {
@@ -695,7 +307,7 @@ internal static class MonsterFieldDamageGuard
             guard.BlockWasBroken |= blockAbsorbed >= target.Block;
         }
         using (EnterAttackBlockLoss())
-            await CreatureCmd.LoseBlock(target, blockAbsorbed);
+            await CreatureCmd.LoseBlock(ctx, target, blockAbsorbed, source);
         ThermalVortexPlayerImpactVfx.PlayBlockedImpact(target);
         remainingDamage -= blockAbsorbed;
         MainFile.Logger.Info(
@@ -705,12 +317,6 @@ internal static class MonsterFieldDamageGuard
 
     private static int ToDamageInt(decimal damage) =>
         Math.Max(0, (int)damage);
-
-    private static decimal ResolveDamage(DamageVar damage) =>
-        Math.Max(0, damage?.IntValue ?? 0);
-
-    private static ValueProp ResolveProps(DamageVar damage) =>
-        damage?.Props ?? ValueProp.Unpowered;
 
     private static IDisposable Suppress()
     {

@@ -16,41 +16,77 @@ namespace ThermalVortex.ThermalVortexCode.Powers;
 
 public class FusionPreparationPower : ThermalVortexPower
 {
-    private List<int> _pendingEnergyAmounts = [];
+    private readonly record struct PendingPreparation(int DueTurn, int EnergyGain);
+
+    private List<PendingPreparation> _pending = [];
 
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
-    internal int PendingCardCount => Math.Max(1, _pendingEnergyAmounts.Count);
-    internal int PendingEnergy => _pendingEnergyAmounts.Count > 0
-        ? _pendingEnergyAmounts.Sum()
+    internal int PendingMonsterCount => Math.Max(1, _pending.Count);
+    internal int PendingEnergy => _pending.Count > 0
+        ? _pending.Sum(preparation => preparation.EnergyGain)
         : Math.Max(0, Amount);
 
     protected override void DeepCloneFields()
     {
         base.DeepCloneFields();
-        _pendingEnergyAmounts = [.. _pendingEnergyAmounts];
+        _pending = [.. _pending];
     }
 
-    internal void Bind(int energyAmount) =>
-        _pendingEnergyAmounts.Add(Math.Max(0, energyAmount));
+    internal void Bind(int energyAmount)
+    {
+        if (Owner?.Player?.PlayerCombatState is { } combatState)
+            _pending.Add(new PendingPreparation(combatState.TurnNumber + 1, Math.Max(0, energyAmount)));
+    }
 
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext ctx, Player player)
     {
-        if (player?.Creature != Owner)
+        if (player?.Creature != Owner || player?.PlayerCombatState is not { } combatState)
             return;
 
-        var pendingEnergyAmounts = _pendingEnergyAmounts.Count > 0
-            ? _pendingEnergyAmounts.ToList()
-            : [Math.Max(0, Amount)];
-        foreach (var _ in pendingEnergyAmounts)
+        var isCombatValid = MonsterFieldService.CaptureMaterialUseValidity(player);
+        if (!isCombatValid())
+            return;
+
+        var turnNumber = combatState.TurnNumber;
+        var due = _pending.Count > 0
+            ? _pending.Where(preparation => preparation.DueTurn <= turnNumber).ToList()
+            : [new PendingPreparation(turnNumber, Math.Max(0, Amount))];
+        if (due.Count == 0)
+            return;
+
+        _pending.RemoveAll(preparation => preparation.DueTurn <= turnNumber);
+        foreach (var _ in due)
         {
-            var command = player.Creature.CombatState.CreateCard<XyzSummon>(player);
-            await ThermalVortexCommandCompat.AddGeneratedCardToCombat(command, PileType.Hand, player, CardPilePosition.Top);
+            if (combatState.Hand.Cards.Count >= CardPile.MaxCardsInHand)
+                break;
+
+            var monsters = CardSelectionHelper.DrawPileMonsters(player);
+            if (monsters.Count == 0)
+                break;
+
+            var chosen = await CardSelectionHelper.ChooseOne(
+                ctx, player, monsters, "THERMALVORTEX-FUSION_PREPARATION.selectionPrompt", cancelable: false);
+            if (!isCombatValid())
+                return;
+            if (combatState.Hand.Cards.Count < CardPile.MaxCardsInHand
+                && CardSelectionHelper.IsCurrentPileCard(player, chosen, PileType.Draw))
+            {
+                await CardPileCmd.Add(chosen, PileType.Hand, CardPilePosition.Top, this, false);
+                if (!isCombatValid())
+                    return;
+            }
         }
 
-        await PlayerCmd.GainEnergy(pendingEnergyAmounts.Sum(), player);
-        _pendingEnergyAmounts.Clear();
-        await PowerCmd.Remove(this);
+        var energyGain = due.Sum(preparation => preparation.EnergyGain);
+        await PlayerCmd.GainEnergy(energyGain, player);
+        if (!ReferenceEquals(Owner?.GetPower<FusionPreparationPower>(), this))
+            return;
+
+        if (_pending.Count == 0)
+            await PowerCmd.Remove(this);
+        else
+            await ThermalVortexCommandCompat.ModifyPowerAmount(ctx, this, -energyGain, Owner, null, true);
     }
 }
 

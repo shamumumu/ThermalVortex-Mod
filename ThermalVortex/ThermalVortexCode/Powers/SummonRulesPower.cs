@@ -184,8 +184,5 @@ public class SummonRulesPower : ThermalVortexPower, IMonsterFieldEnterListener
 
         public override string ToString() =>
             MonsterFieldService.GetCapacity(_rulesOwner?.Owner).ToString();
-
-        protected override decimal GetBaseValueForIConvertible() =>
-            MonsterFieldService.GetCapacity(_rulesOwner?.Owner);
     }
 }

@@ -15,7 +15,9 @@ public enum RewardPoolDraftStage
     Extra,
     Complete,
     Consumed,
-    GenericPackages
+    GenericPackages,
+    TransitionPackages,
+    GenericCards
 }
 
 public sealed record RewardPoolDraftGenericOffer(string Id, IReadOnlyList<string> CardIds);
@@ -42,11 +44,14 @@ public sealed record RewardPoolDraftState
     public string SelectedGenericPackageId { get; init; } = string.Empty;
     public IReadOnlyList<string> SelectedGenericCardIds { get; init; } = [];
     public IReadOnlyList<RewardPoolDraftGenericOffer> GenericPackageOffers { get; init; } = [];
+    public bool UsesSingleCardDraft { get; init; }
     // Missing fields in schema 2 retain that session's single twenty-card round.
     public int GenericRoundCount { get; init; } = 1;
     public int GenericCardsPerRound { get; init; } = 20;
     public int GenericRoundsCompleted => GenericCardsPerRound > 0
-        ? SelectedGenericCardIds.Count / GenericCardsPerRound : 0;
+        ? Math.Max(0, SelectedGenericCardIds.Count
+            - (UsesSingleCardDraft ? RewardPoolDraftService.TransitionPackageSize : 0)) / GenericCardsPerRound
+        : 0;
 
     internal RewardPoolDraftState Snapshot() => this with
     {
@@ -68,7 +73,7 @@ public sealed record RewardPoolDraftState
 /// Draft randomness belongs to this persisted session, never the run RNG. An offer is
 /// drawn once and durably committed with the preceding pick before it becomes visible.
 /// </summary>
-public static class RewardPoolDraftService
+public static partial class RewardPoolDraftService
 {
     public const int PackageRoundCount = 3;
     public const int GenericTotalCardCount = 20;
@@ -91,7 +96,7 @@ public static class RewardPoolDraftService
 
     public static bool IsSelected
     {
-        get { lock (StateLock) { InitializeLocked(); return _payload?.Selected == true; } }
+        get { lock (StateLock) { InitializeLocked(); return SelectedSession is not null; } }
     }
 
     public static string LoadError
@@ -113,9 +118,13 @@ public static class RewardPoolDraftService
         }
     }
 
-    public static bool TryStartNew(out string error) => TryStartNew(DefaultGenericRoundCount, out error);
+    public static bool TryStartNew(out string error) =>
+        TryStartNew(DefaultGenericRoundCount, usesSingleCardDraft: true, out error);
 
-    public static bool TryStartNew(int genericRoundCount, out string error)
+    public static bool TryStartNew(int genericRoundCount, out string error) =>
+        TryStartNew(genericRoundCount, usesSingleCardDraft: false, out error);
+
+    private static bool TryStartNew(int genericRoundCount, bool usesSingleCardDraft, out string error)
     {
         lock (StateLock)
         {
@@ -135,8 +144,7 @@ public static class RewardPoolDraftService
                 }
                 var candidate = new DraftPayload
                 {
-                    SchemaVersion = 4,
-                    Selected = true,
+                    SchemaVersion = usesSingleCardDraft ? 5 : 4,
                     RandomState = BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(sizeof(ulong))),
                     State = new RewardPoolDraftState
                     {
@@ -146,12 +154,13 @@ public static class RewardPoolDraftService
                         PackageVariantsEnabled = true,
                         PackageVariantVersion = RewardPoolConstructionCatalog.PackageVariantVersion,
                         GenericRoundCount = genericRoundCount,
-                        GenericCardsPerRound = GenericTotalCardCount / genericRoundCount
+                        GenericCardsPerRound = usesSingleCardDraft ? GenericCardPickCount : GenericTotalCardCount / genericRoundCount,
+                        UsesSingleCardDraft = usesSingleCardDraft
                     }
                 };
                 if (!TryPrepareNextOffer(candidate, out error))
                     return Fail(error);
-                return CommitLocked(candidate, out error);
+                return CommitLocked(candidate, out error, openAfterCommit: true);
             }
             catch (Exception ex)
             {
@@ -161,7 +170,9 @@ public static class RewardPoolDraftService
         }
     }
 
-    public static bool TryChoose(string optionId, out string error)
+    public static bool TryChoose(string optionId, out string error) => TryChoose(null, optionId, out error);
+
+    public static bool TryChoose(string sessionId, string optionId, out string error)
     {
         lock (StateLock)
         {
@@ -172,7 +183,8 @@ public static class RewardPoolDraftService
                 error = "This draft uses earlier rules. View it, copy its cards to Free mode, or start a new draft.";
                 return Fail(error);
             }
-            if (_payload is null || !_payload.State.OfferIds.Contains(optionId, StringComparer.Ordinal))
+            if (_payload is null || (sessionId != null && _payload.State.SessionId != sessionId)
+                || !_payload.State.OfferIds.Contains(optionId, StringComparer.Ordinal))
             {
                 error = "This choice is not in the current saved offer.";
                 return Fail(error);
@@ -212,9 +224,13 @@ public static class RewardPoolDraftService
                         break;
                     }
                     case RewardPoolDraftStage.GenericPackages:
+                    case RewardPoolDraftStage.TransitionPackages:
                     {
                         var offer = state.GenericPackageOffers.FirstOrDefault(item => item.Id == optionId);
-                        if (offer is null || !IsValidGenericRoundOffer(state, offer, MainCardsById()))
+                        var cards = MainCardsById();
+                        if (offer is null || (state.UsesSingleCardDraft
+                                ? !IsValidTransitionOffer(state.MainCardIds, offer, cards)
+                                : !IsValidGenericRoundOffer(state, offer, cards)))
                         {
                             error = "This generic package can no longer complete a legal draft. Start a new draft.";
                             return Fail(error);
@@ -256,15 +272,18 @@ public static class RewardPoolDraftService
         }
     }
 
-    public static bool TrySelect(out string error)
+    public static bool TrySelect(out string error) => TrySelect(null, out error);
+
+    public static bool TrySelect(string sessionId, out string error)
     {
         lock (StateLock)
         {
             if (!CanWriteLocked(out error))
                 return false;
-            if (_payload is null || _payload.State.IsLegacy || _payload.State.Stage == RewardPoolDraftStage.Consumed)
+            if (_payload?.State is not { IsLegacy: false, Stage: RewardPoolDraftStage.Complete }
+                || (sessionId != null && _payload.State.SessionId != sessionId))
             {
-                error = "Start a new draft before selecting this mode.";
+                error = "Complete a fresh draft before selecting this mode.";
                 return Fail(error);
             }
             if (_payload.Selected)
@@ -279,9 +298,9 @@ public static class RewardPoolDraftService
     {
         lock (StateLock)
         {
-            if (!CanWriteLocked(out _) || _payload?.Selected != true)
+            if (!CanWriteLocked(out _) || SelectedSession is not { } selected)
                 return;
-            var candidate = _payload.Snapshot();
+            var candidate = selected.Snapshot();
             candidate.Selected = false;
             CommitLocked(candidate, out _);
         }
@@ -299,7 +318,7 @@ public static class RewardPoolDraftService
             InitializeLocked();
             // An unreadable, unselected draft does not need to be rewritten to
             // select a healthy preset or the explicit standard-mode fallback.
-            if (_payload?.Selected != true)
+            if (SelectedSession is not { } selected)
             {
                 if (!TryCommitSelection(commitSelection, out error))
                     return Fail(error);
@@ -307,7 +326,7 @@ public static class RewardPoolDraftService
             }
             if (!CanWriteLocked(out error))
                 return false;
-            var candidate = _payload.Snapshot();
+            var candidate = selected.Snapshot();
             candidate.Selected = false;
             return CommitLocked(candidate, out error, commitSelection);
         }
@@ -326,21 +345,22 @@ public static class RewardPoolDraftService
                 validation = Invalid(_loadError);
                 return false;
             }
-            if (_payload?.Selected != true || _payload.State.IsLegacy || _payload.State.Stage != RewardPoolDraftStage.Complete)
+            var state = SelectedSession?.State;
+            if (state is not { IsLegacy: false, Stage: RewardPoolDraftStage.Complete })
             {
                 validation = Invalid("Complete and select a fresh draft before starting a run.");
                 return false;
             }
             try
             {
-                if (!ValidateCurrentCatalog(_payload.State, out var error))
+                if (!ValidateCurrentCatalog(state, out var error))
                 {
                     validation = Invalid(error);
                     return false;
                 }
                 if (!RewardPoolCatalog.CreateManualDefinition(
-                        _payload.State.MainCardIds,
-                        _payload.State.ExtraCardIds,
+                        state.MainCardIds,
+                        state.ExtraCardIds,
                         out definition,
                         out validation))
                     return false;
@@ -348,7 +368,7 @@ public static class RewardPoolDraftService
                 definition = definition.WithConstruction(new RewardPoolConstructionMetadata
                 {
                     Method = RewardPoolConstructionMethod.Draft,
-                    DraftSessionId = _payload.State.SessionId
+                    DraftSessionId = state.SessionId
                 });
                 validation = definition.Validate();
                 return validation.IsValid;
@@ -367,20 +387,21 @@ public static class RewardPoolDraftService
         {
             if (!CanWriteLocked(out error))
                 return false;
-            if (_payload is null || _payload.State.IsLegacy || !string.Equals(_payload.State.SessionId, sessionId, StringComparison.Ordinal))
+            var session = FindSession(sessionId);
+            if (session is null || session.State.IsLegacy)
             {
                 error = "The launched draft does not match the saved draft session.";
                 return Fail(error);
             }
-            if (_payload.State.Stage == RewardPoolDraftStage.Consumed)
+            if (session.State.Stage == RewardPoolDraftStage.Consumed)
                 return true;
-            if (_payload.State.Stage != RewardPoolDraftStage.Complete)
+            if (session.State.Stage != RewardPoolDraftStage.Complete)
             {
                 error = "An unfinished draft cannot be consumed.";
                 return Fail(error);
             }
-            var candidate = _payload.Snapshot();
-            candidate.Selected = true;
+            var candidate = session.Snapshot();
+            candidate.Selected = false;
             candidate.State = candidate.State with { Stage = RewardPoolDraftStage.Consumed, OfferIds = [] };
             return CommitLocked(candidate, out error);
         }
@@ -420,6 +441,14 @@ public static class RewardPoolDraftService
                     themeOffers.Add(CreateThemeOffer(state, package, definitions, cards, ref randomState));
             state = state with { Stage = RewardPoolDraftStage.Packages, GenericPackageOffers = [], PackageOffers = themeOffers.ToArray() };
         }
+        else if (state.UsesSingleCardDraft && !state.GenericPackagePicked)
+        {
+            if (!TryPrepareSingleCardOffer(state, ref randomState, out state, out offer))
+            {
+                error = "The available cards cannot complete this draft.";
+                return false;
+            }
+        }
         else if (!state.GenericPackagePicked)
         {
             if (!TryCreateGenericRoundOffers(state, MainCardsById(), ref randomState, out var genericOffers))
@@ -455,7 +484,8 @@ public static class RewardPoolDraftService
             return true;
         }
 
-        if (offer.Count != 3)
+        var expectedOfferCount = state.Stage == RewardPoolDraftStage.GenericCards ? GenericCardOfferCount : 3;
+        if (offer.Count != expectedOfferCount)
         {
             error = "Three available choices cannot complete a legal draft.";
             return false;
@@ -480,7 +510,7 @@ public static class RewardPoolDraftService
         return CanCompletePackages(AddUnique(state.MainCardIds, members ?? package.CardIds),
             state.SelectedPackageIds.Append(package.Id).ToHashSet(StringComparer.Ordinal),
             packages, PackageRoundCount - state.PackagePicks - 1, cards,
-            state.GenericRoundCount, state.GenericCardsPerRound);
+            state.GenericRoundCount, state.GenericCardsPerRound, state.UsesSingleCardDraft);
     }
 
     private static RewardPoolDraftThemeOffer CreateThemeOffer(RewardPoolDraftState state, RewardPoolPackage package,
@@ -519,12 +549,12 @@ public static class RewardPoolDraftService
     // to a final count. Every displayed choice therefore preserves a full draft.
     private static bool CanCompletePackages(IReadOnlyList<string> selected, HashSet<string> selectedPackages,
         IReadOnlyList<RewardPoolPackage> packages, int rounds, IReadOnlyDictionary<string, CardModel> cards,
-        int genericRounds, int genericSize)
+        int genericRounds, int genericSize, bool usesSingleCardDraft)
     {
         if (selected.Count > MaxPackageCardCount)
             return false;
         if (rounds == 0)
-            return CanFinishWithGeneric(selected, cards)
+            return usesSingleCardDraft ? CanOfferSingleCardDraft(selected, cards) : CanFinishWithGeneric(selected, cards)
                 && (genericRounds == 1 || CanFinishGenericRounds(selected, genericRounds, genericSize, cards));
         var viable = 0;
         foreach (var package in packages)
@@ -532,7 +562,7 @@ public static class RewardPoolDraftService
             if (!selectedPackages.Add(package.Id))
                 continue;
             var possible = CanCompletePackages(AddUnique(selected, package.CardIds), selectedPackages,
-                packages, rounds - 1, cards, genericRounds, genericSize);
+                packages, rounds - 1, cards, genericRounds, genericSize, usesSingleCardDraft);
             selectedPackages.Remove(package.Id);
             if (possible && ++viable == 3)
                 return true;
@@ -825,12 +855,13 @@ public static class RewardPoolDraftService
         var expected = packageCards.Concat(state.SelectedGenericCardIds).ToHashSet(StringComparer.Ordinal);
         if (!expected.SetEquals(state.MainCardIds) || state.MainCardIds.Any(id => !cards.ContainsKey(id)))
             return false;
-        if (state.PackagePicks == PackageRoundCount && !CanFinishWithGeneric(packageCards, cards))
+        if (state.PackagePicks == PackageRoundCount
+            && !(state.UsesSingleCardDraft ? CanOfferSingleCardDraft(packageCards, cards) : CanFinishWithGeneric(packageCards, cards)))
             return false;
         var generic = RewardPoolConstructionCatalog.GenericCardIds.ToHashSet(StringComparer.Ordinal);
         if (state.SelectedGenericCardIds.Any(id => !generic.Contains(id) || packageCards.Contains(id))
             || (state.GenericPackagePicked && !HasRequiredRarities(state.MainCardIds, cards))
-            || (state.PackagePicks == PackageRoundCount && state.GenericRoundCount > 1
+            || (!state.UsesSingleCardDraft && state.PackagePicks == PackageRoundCount && state.GenericRoundCount > 1
                 && !CanFinishGenericRounds(state.MainCardIds, state.GenericRoundCount - state.GenericRoundsCompleted,
                     state.GenericCardsPerRound, cards)))
             return false;
@@ -844,6 +875,8 @@ public static class RewardPoolDraftService
             return false;
         if (state.Stage == RewardPoolDraftStage.GenericPackages
             && state.GenericPackageOffers.Any(offer => !IsValidGenericRoundOffer(state, offer, cards)))
+            return false;
+        if (state.UsesSingleCardDraft && !ValidateSingleCardCatalog(state, packageCards, cards))
             return false;
         var extra = RewardPoolCatalog.GetSelectableExtraCandidates().Select(RewardPoolCatalog.GetId).ToHashSet(StringComparer.Ordinal);
         if (state.ExtraCardIds.Any(id => !extra.Contains(id))
@@ -889,9 +922,10 @@ public static class RewardPoolDraftService
             var backup = _path + ".bak";
             if (!File.Exists(_path) && !File.Exists(backup))
                 return;
-            if (TryRead(_path, out var payload, out var serialized, out var error))
+            if (TryRead(_path, out var library, out var serialized, out var error))
             {
-                _payload = payload;
+                _library = library;
+                _payload = library.Sessions.FirstOrDefault();
                 _committedJson = serialized;
                 if (File.Exists(backup) && !TryRead(backup, out _, out _, out var backupError))
                     _loadError = $"The draft backup is unreadable. Original files were preserved. {backupError}";
@@ -900,7 +934,10 @@ public static class RewardPoolDraftService
             // A backup is useful for inspection, but never roll back a consumed
             // session or overwrite a corrupt primary during automatic recovery.
             if (TryRead(backup, out var recovered, out _, out _))
-                _payload = recovered;
+            {
+                _library = recovered;
+                _payload = recovered.Sessions.FirstOrDefault();
+            }
             _loadError = $"The saved draft cannot be safely updated. Original files were preserved. {error}";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
@@ -918,13 +955,12 @@ public static class RewardPoolDraftService
         return true;
     }
 
-    private static bool CommitLocked(DraftPayload candidate, out string error,
+    private static bool CommitLibraryLocked(DraftLibrary candidate, string editingSessionId, out string error,
         Func<bool> commitSelection = null)
     {
-        if (!ValidateStructure(candidate, out error))
+        if (!ValidateLibrary(candidate, out error))
             return Fail(error);
-        var snapshot = candidate.Snapshot();
-        var serialized = JsonSerializer.Serialize(snapshot, JsonOptions);
+        var serialized = JsonSerializer.Serialize(candidate, JsonOptions);
         var directory = Path.GetDirectoryName(_path);
         var transaction = Guid.NewGuid().ToString("N");
         var temporary = _path + "." + transaction + ".tmp";
@@ -962,7 +998,8 @@ public static class RewardPoolDraftService
             VerifyExact(_path + ".bak", serialized);
             if (commitSelection is not null && !TryCommitSelection(commitSelection, out error))
                 throw new IOException(error);
-            _payload = snapshot;
+            _library = candidate;
+            _payload = FindSession(editingSessionId) ?? candidate.Sessions.FirstOrDefault();
             _committedJson = serialized;
             _lastError = string.Empty;
             error = string.Empty;
@@ -1032,9 +1069,9 @@ public static class RewardPoolDraftService
         stream.Flush(flushToDisk: true);
     }
 
-    private static bool TryRead(string path, out DraftPayload payload, out string serialized, out string error)
+    private static bool TryRead(string path, out DraftLibrary library, out string serialized, out string error)
     {
-        payload = null;
+        library = null;
         serialized = null;
         try
         {
@@ -1044,17 +1081,7 @@ public static class RewardPoolDraftService
                 return false;
             }
             serialized = File.ReadAllText(path, Encoding.UTF8);
-            payload = JsonSerializer.Deserialize<DraftPayload>(serialized, JsonOptions);
-            if (!ValidateStructure(payload, out error))
-                return false;
-            payload.State = payload.State with
-            {
-                IsLegacy = payload.State.IsLegacy || payload.SchemaVersion < 2
-                    || payload.State.RulesVersion != RewardPoolSizePolicy.CurrentRulesVersion
-                    || payload.State.PackageVersion != RewardPoolConstructionCatalog.PackageVersion
-                    || (payload.State.PackageVariantsEnabled && payload.State.PackageVariantVersion != RewardPoolConstructionCatalog.PackageVariantVersion)
-            };
-            return true;
+            return TryDeserializeLibrary(serialized, out library, out error);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
         {
@@ -1074,7 +1101,8 @@ public static class RewardPoolDraftService
     {
         error = "The saved draft structure is invalid.";
         var state = payload?.State;
-        if (payload is null || payload.SchemaVersion is < 1 or > 4 || state is null
+        if (payload is null || payload.SchemaVersion is < 1 or > 5 || state is null
+            || state.UsesSingleCardDraft != (payload.SchemaVersion == 5)
             || !Guid.TryParseExact(state.SessionId, "N", out _)
             || !Enum.IsDefined(state.Stage) || state.PackagePicks < 0 || state.PackagePicks > PackageRoundCount
             || !ValidIds(state.MainCardIds) || !ValidIds(state.ExtraCardIds)
@@ -1100,7 +1128,7 @@ public static class RewardPoolDraftService
         if (state.PackageOffers is null || state.SelectedPackageOffers is null || !ValidIds(state.SelectedGenericCardIds)
             || (payload.SchemaVersion < 4 && (state.PackageVariantsEnabled || state.PackageVariantVersion != 0
                 || state.PackageOffers.Count != 0 || state.SelectedPackageOffers.Count != 0))
-            || (payload.SchemaVersion == 4 && (!state.PackageVariantsEnabled || state.PackageVariantVersion <= 0)))
+            || (payload.SchemaVersion >= 4 && (!state.PackageVariantsEnabled || state.PackageVariantVersion <= 0)))
             return false;
         if (state.PackageVariantsEnabled)
         {
@@ -1130,16 +1158,21 @@ public static class RewardPoolDraftService
             || !ValidIds(state.SelectedGenericCardIds) || state.GenericPackageOffers is null
             || state.GenericRoundCount <= 0 || state.GenericRoundCount > GenericTotalCardCount
             || state.GenericCardsPerRound <= 0 || state.GenericCardsPerRound > GenericTotalCardCount
-            || state.GenericRoundCount * state.GenericCardsPerRound != GenericTotalCardCount
             || (payload.SchemaVersion == 2 && (state.GenericRoundCount != 1 || state.GenericCardsPerRound != GenericTotalCardCount))
             || state.SelectedGenericCardIds.Count > GenericTotalCardCount
-            || state.SelectedGenericCardIds.Count % state.GenericCardsPerRound != 0
             || state.MainCardIds.Count > RewardPoolSizePolicy.MaxSelectableMain
             || state.GenericPackagePicked != (state.SelectedGenericCardIds.Count == GenericTotalCardCount)
+            || state.SelectedGenericCardIds.Any(id => !state.MainCardIds.Contains(id, StringComparer.Ordinal)))
+            return false;
+
+        if (state.UsesSingleCardDraft)
+            return ValidateSingleCardStructure(state, out error);
+
+        if (state.GenericRoundCount * state.GenericCardsPerRound != GenericTotalCardCount
+            || state.SelectedGenericCardIds.Count % state.GenericCardsPerRound != 0
             || (state.SelectedGenericCardIds.Count > 0
                 ? !IsGenericOptionId(state, state.SelectedGenericPackageId, state.GenericRoundsCompleted)
-                : !string.IsNullOrEmpty(state.SelectedGenericPackageId))
-            || state.SelectedGenericCardIds.Any(id => !state.MainCardIds.Contains(id, StringComparer.Ordinal)))
+                : !string.IsNullOrEmpty(state.SelectedGenericPackageId)))
             return false;
 
         var complete = state.Stage is RewardPoolDraftStage.Complete or RewardPoolDraftStage.Consumed;
@@ -1232,6 +1265,7 @@ public static class RewardPoolDraftService
     private sealed class DraftPayload
     {
         public int SchemaVersion { get; set; } = 1;
+        public int Number { get; set; }
         public bool Selected { get; set; }
         public ulong RandomState { get; set; }
         public RewardPoolDraftState State { get; set; }
@@ -1239,6 +1273,7 @@ public static class RewardPoolDraftService
         internal DraftPayload Snapshot() => new()
         {
             SchemaVersion = SchemaVersion,
+            Number = Number,
             Selected = Selected,
             RandomState = RandomState,
             State = State.Snapshot()

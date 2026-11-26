@@ -31,27 +31,8 @@ internal static class ThermalVortexRewardFilters
     internal static bool IsExtraDeckRewardCard(CardModel card) =>
         card is XyzMonsterCard || IsKnownExtraDeckDisplayCard(card);
 
-    internal static bool ShouldExcludeExtraDeckForReward(
-        CardModel card,
-        Player player,
-        CardCreationOptions options)
-    {
-        return ShouldExcludeExtraDeckForReward(card, player, options?.Source ?? CardCreationSource.Other);
-    }
-
-    internal static bool ShouldExcludeExtraDeckForReward(
-        CardModel card,
-        Player player,
-        CardCreationSource source)
-    {
-        if (!IsExtraDeckRewardCard(card))
-            return false;
-
-        if (source == CardCreationSource.Encounter)
-            return true;
-
-        return IsExtraDeckFull(player);
-    }
+    private static bool ShouldExcludeExtraDeckForReward(CardModel card, CardCreationSource source) =>
+        source == CardCreationSource.Encounter && IsExtraDeckRewardCard(card);
 
     internal static bool IsAllowedDirectReward(
         CardModel card,
@@ -76,7 +57,7 @@ internal static class ThermalVortexRewardFilters
         if (IsAlwaysDirectRewardExcluded(card))
             return false;
 
-        if (ShouldExcludeExtraDeckForReward(card, player, options))
+        if (ShouldExcludeExtraDeckForReward(card, options?.Source ?? CardCreationSource.Other))
             return false;
 
         return IsAllowedByConstructedPool(card, player);
@@ -191,22 +172,19 @@ internal static class ThermalVortexRewardFilters
         if (IsAlwaysDirectRewardExcluded(card))
             return false;
 
-        if (ShouldExcludeExtraDeckForReward(card, player, source))
+        if (ShouldExcludeExtraDeckForReward(card, source))
             return false;
 
         return IsAllowedByConstructedPool(card, player);
     }
 
-    internal static IEnumerable<CardModel> FilterNeowDirectRewardPool(
-        IEnumerable<CardModel> cards,
-        Player player)
+    internal static IEnumerable<CardModel> FilterNeowDirectRewardPool(IEnumerable<CardModel> cards)
     {
         if (cards is null)
             return [];
 
         return cards
             .Where(card => !IsAlwaysDirectRewardExcluded(card))
-            .Where(card => !IsExtraDeckFull(player) || !IsExtraDeckRewardCard(card))
             .ToList();
     }
 
@@ -227,9 +205,6 @@ internal static class ThermalVortexRewardFilters
 
         return null;
     }
-
-    private static bool IsExtraDeckFull(Player player) =>
-        player?.GetRelic<ThermalVortexCore>()?.CanAcceptExtraDeckReward == false;
 
     private static bool IsAllowedByConstructedPool(CardModel card, Player player)
     {
@@ -342,7 +317,7 @@ internal static class ThermalVortexNeowDirectCardPoolFilterPatch
             == RewardGrantPolicy.StandardLegacy)
         {
             // Preserve the exact pre-construction-mode Neow filtering path.
-            __result = ThermalVortexRewardFilters.FilterNeowDirectRewardPool(__result, player);
+            __result = ThermalVortexRewardFilters.FilterNeowDirectRewardPool(__result);
             return;
         }
 

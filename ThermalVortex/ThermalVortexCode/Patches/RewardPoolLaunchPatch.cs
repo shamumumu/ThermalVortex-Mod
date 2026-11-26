@@ -14,12 +14,13 @@ namespace ThermalVortex.ThermalVortexCode.Patches;
     typeof(NGame),
     nameof(NGame.StartNewSingleplayerRun),
     [
-        typeof(CharacterModel),
+        typeof(Player),
         typeof(bool),
         typeof(IReadOnlyList<ActModel>),
         typeof(IReadOnlyList<ModifierModel>),
         typeof(string),
         typeof(GameMode),
+        typeof(bool),
         typeof(int),
         typeof(DateTimeOffset?)
     ])]
@@ -27,11 +28,12 @@ internal static class RewardPoolSingleplayerLaunchPatch
 {
     [HarmonyPrefix]
     private static void BeginLaunch(
-        CharacterModel __0,
+        Player __0,
         GameMode __5,
+        bool __6,
         out RewardPoolLaunchToken __state)
     {
-        __state = RewardPoolLaunchCoordinator.BeginSingleplayer(__0, __5);
+        __state = RewardPoolLaunchCoordinator.BeginSingleplayer(__0?.Character, __5, __6);
     }
 
     [HarmonyPostfix]
@@ -72,6 +74,7 @@ internal static class RewardPoolMultiplayerLaunchPatch
         typeof(IReadOnlyList<ActModel>),
         typeof(IReadOnlyList<ModifierModel>),
         typeof(GameMode),
+        typeof(bool),
         typeof(int),
         typeof(string)
     ])]
@@ -133,10 +136,12 @@ internal static class RewardPoolLaunchCoordinator
 
     internal static RewardPoolLaunchToken BeginSingleplayer(
         CharacterModel character,
-        GameMode gameMode)
+        GameMode gameMode,
+        bool isCustomGame)
     {
         RewardPoolMultiplayerLobby.ClearPendingLaunch();
-        if (IsEligibleSingleplayerLaunch(character, gameMode))
+        var eligible = !isCustomGame && IsEligibleSingleplayerLaunch(character, gameMode);
+        if (eligible)
         {
             if (RewardPoolSetupService.TryPeekPending(out var pending))
             {
@@ -163,11 +168,11 @@ internal static class RewardPoolLaunchCoordinator
         lock (StateLock)
             _activeToken = token;
 
-        if (!IsEligibleSingleplayerLaunch(character, gameMode))
+        if (!eligible)
         {
             RewardPoolSetupService.Clear();
             MainFile.Logger.Info(
-                $"Reward-pool pending rejected at singleplayer launch character={token.CharacterId} gameMode={gameMode}");
+                $"Reward-pool pending rejected at singleplayer launch character={token.CharacterId} gameMode={gameMode} custom={isCustomGame}");
         }
 
         return token;
@@ -205,6 +210,7 @@ internal static class RewardPoolLaunchCoordinator
         if (!token.IsSingleplayer
             || token.GameMode != GameMode.Standard
             || runState?.GameMode != GameMode.Standard
+            || runState.IsCustomGame
             || players is not { Count: 1 }
             || thermalPlayers.Count != 1
             || !string.Equals(

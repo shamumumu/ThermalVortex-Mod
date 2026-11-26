@@ -277,7 +277,7 @@
 
 | 项目 | 基础 | 升级 |
 |---|---|---|
-| 能量费用 | 0 | 0 |
+| 能量费用 | 1 | 1 |
 | 怪兽生命 | 不适用 | 不适用 |
 | 固有关键词 | 无 | 无 |
 
@@ -1304,21 +1304,21 @@
 
 **基础卡面文本：**
 
-> 下回合开始时，将1张融合加入手牌，获得1点能量。  
+> 下回合开始后，从抽牌堆选1只怪兽加入手牌，获得2点能量。  
 
 **升级卡面文本：**
 
-> 下回合开始时，将1张融合加入手牌，获得2点能量。  
+> 下回合开始后，从抽牌堆选1只怪兽加入手牌，获得3点能量。  
 
-卡文来源：[当前中文资源:231](<../ThermalVortex/localization/zhs/cards.json:231>)，键 `THERMALVORTEX-FUSION_PREPARATION.description`；原生关键词按对应等级自动附加。
+卡文来源为 `THERMALVORTEX-FUSION_PREPARATION.description`，原生关键词按对应等级自动附加。 [当前中文资源](../ThermalVortex/localization/zhs/cards.json)
 
-**基础实际效果：** 下个玩家回合开始，在手牌生成1张未升级融合并获得1点能量。
+**基础实际效果：** 自己下回合完成常规抽牌后，从抽牌堆选1只怪兽加入手牌，获得2点能量。
 
-**升级实际效果：** 下个玩家回合开始，在手牌生成1张未升级融合并获得2点能量。
+**升级实际效果：** 自己下回合完成常规抽牌后，从抽牌堆选1只怪兽加入手牌，获得3点能量。
 
-**必要条件与实现补充：** 每次使用独立记一份预约，多个预约可叠加：每份生成1张融合，能量按份相加。升级来源也生成未升级融合；全部预约在一次下回合结算后清除。
+**必要条件与实现补充：** 每次打出独立记录一份预约。下回合逐份从当前抽牌堆选1只怪兽，将原牌移入手牌，遵循手牌上限。没有可选怪兽或手牌已满时，仍计入该份能量。全部预约结算后一次发放累计能量并清除。
 
-**实现位置：** [NewMainDeckCards.cs:171](<../ThermalVortexCode/Cards/NewMainDeckCards.cs:171>)；[NewCardPowers.cs:17](<../ThermalVortexCode/Powers/NewCardPowers.cs:17>)
+**实现位置：** [NewMainDeckCards.cs](../ThermalVortexCode/Cards/NewMainDeckCards.cs) · [NewCardPowers.cs](../ThermalVortexCode/Powers/NewCardPowers.cs)
 
 ### 未来融合 · `FutureFusion`
 

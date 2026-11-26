@@ -14,7 +14,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\ThermalVortex\scripts\
 
 普通构建可使用 `-Configuration`（默认 `Debug`）、`-DotNetPath`、`-Sts2Path`、`-OutputPath` 和 `-BuildLockTimeoutSeconds`（1–60 秒，默认 60）。`-Restore` 仅在已确认依赖配置变化时显式使用；依赖产物缺失或无恢复构建明确因依赖状态失败时，由共用实现进行条件式 restore，并补一次 build。`-TaskProbeSource` 只供授权探针流程使用；`-IncludeResources` 连同 `-ResourceRoot`、`-ResourceTemporaryRoot` 只供需要资源打包的准备流程使用，普通构建不传这些参数。
 
-依赖声明为 Godot.NET.Sdk 4.5.1、net9.0、BaseLib 3.1.2、Publicizer 2.3.0、PckPacker 0.1.1 和版本通配的 ModAnalyzers；这些是项目声明，不是对运行中实际加载版本的检测。`Directory.Build.props` 提供本机路径，`Sts2PathDiscovery.props` 推导数据和 ModsPath。只有依赖配置改变、`project.assets.json` 缺失或无恢复构建明确因依赖状态失败时才恢复依赖。
+依赖声明为 Godot.NET.Sdk 4.5.1、net9.0、BaseLib 3.4.8、Publicizer 2.3.0、PckPacker 0.1.1 和版本通配的 ModAnalyzers；这些是项目声明，不是对运行中实际加载版本的检测。`Directory.Build.props` 提供本机路径，`Sts2PathDiscovery.props` 推导数据和 ModsPath。只有依赖配置改变、`project.assets.json` 缺失或无恢复构建明确因依赖状态失败时才恢复依赖。
 
 普通代码修改默认构建一次；本次修改造成编译错误时，修复后允许必要复构建，成功后停止。没有代码或依赖状态变化时，不原样重复失败构建。纯外部文档修改不触发构建；JSON 或 PNG 的格式核对仅覆盖本次实际修改的资源。
 

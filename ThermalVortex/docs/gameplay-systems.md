@@ -47,7 +47,7 @@
 
 大义贼入场选择一次可负担金币总价档位，可不支付：基础10、100、1000……金币对应1、2、3……张自选封印部件入手，升级总价7折。购买n张时，玩家从左手、右手、左腿、右腿、躯干5种中依次选择n次，允许重复选择同一种，生成基础部件。召唤者在场时每只于己方回合开始、正常抽牌前各向抽牌堆随机加入1张千年奖励怪兽，升级来源让生成牌本场费用减少1、最低0。密钥入场向本场抽牌堆随机加入千年奖励怪兽每种各1张，升级时生成牌全部升级。生成范围排除封印部件、衍生物与额外怪兽，取完整主奖励目录，不依本局白名单。五张本体均计入千年卡及千年怪兽，并可作为要求千年怪兽的融合素材。千年召唤者的单一持续能力计入1种千年能力，同名多只召唤者不叠加能力种数。千年邪与千年守护者沿用本次入场前锁值，新召唤的本体不计入；素材离手或离场、后续抽弃牌与新增能力均不改变本次计数。五张仍是额外怪兽，继续排除于千年奖励怪兽生成池。来源：[MillenniumExtraDeckCards.cs](../ThermalVortexCode/Cards/MillenniumExtraDeckCards.cs)、[MillenniumExtraDeckPowers.cs](../ThermalVortexCode/Powers/MillenniumExtraDeckPowers.cs)。
 
-核心分别维护永久拥有和本战斗剩余的额外条目；每条保存类型、非负升级等级和深拷贝附魔。拥有上限10，普通战斗不会因使用而永久删除拥有条目。获得额外怪兽时ShouldAddToDeck只拦截核心拥有者自己的牌，转存其核心；即使上限已满也不把它改塞入主卡组。顶部显示在战斗准备前取拥有数，准备后取本场剩余数。 来源：[Relics/ThermalVortexCore.cs:111](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/ThermalVortexCore.cs:111>)、[Relics/ThermalVortexCore.cs:924](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/ThermalVortexCore.cs:924>)、[Relics/ThermalVortexCore.cs:189](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/ThermalVortexCore.cs:189>)。
+核心分别维护永久拥有和本战斗剩余的额外条目；每条保存类型、非负升级等级和深拷贝附魔。永久拥有无上限，普通战斗不会因使用而永久删除拥有条目。获得的额外怪兽按拥有者转存至其核心。顶部显示在战斗准备前取拥有数，准备后取本场剩余数。 来源：[ThermalVortexCore.cs](../ThermalVortexCode/Relics/ThermalVortexCore.cs)。
 
 电子终结龙要求至少2只电子怪兽，所选素材逐一通过 `CyberSeries.IsCyberMonster` 判定；素材来源仍服从下表对应的融合方式。生命仍为素材数×8，对所有敌人的直接扣血仍为素材数×15/20。来源：[CyberEndDragon.cs](../ThermalVortexCode/Cards/CyberEndDragon.cs)、[CyberSeries.cs](../ThermalVortexCode/Cards/CyberSeries.cs)。
 
@@ -72,7 +72,7 @@
 
 额外条目可经原生升级、附魔和删卡选择界面使用临时代理牌并写回核心。删卡页同时提供符合原生筛选条件的额外怪兽，并标示额外牌组归属；确认后沿用原生删除流程，按所选实体对应的永久条目移除，取消不删除。删光后的空额外牌组可以保存和读回。火堆确认升级后，将所选实体的升级等级写回对应的永久拥有条目，后续查看、战斗与读档均保留；取消选择不写入。代理在原生玩家选牌命令开始筛选前加入，每条只加入一次；原生选择与联机同步完成后仅清理本次代理，预览克隆不回写。主牌组没有可升级牌时，火堆仍按可升级额外条目启用。附魔入口按原生CanEnchant/predicate过滤，不能保证所有原版或第三方附魔对所有额外怪兽都有实际效果。标准牌堆界面使用临时虚拟牌堆展示额外牌组和奖励目录，不把预览牌加入战斗。 来源：[Patches/ExtraDeckUpgradePatch.cs:24](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ExtraDeckUpgradePatch.cs:24>)、[Patches/ExtraDeckRemovalPatch.cs](../ThermalVortexCode/Patches/ExtraDeckRemovalPatch.cs)、[Patches/ExtraDeckEnchantmentPatch.cs:28](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ExtraDeckEnchantmentPatch.cs:28>)、[Patches/ExtraDeckTopBarPatch.cs:106](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ExtraDeckTopBarPatch.cs:106>)。
 
-战斗奖励只有在玩家匹配、处于CombatRoom、核心未满、存在带同步器的普通CardReward且尚无额外奖励时追加。额外奖励抽取3个不同的允许候选；不足3个则不追加此项；该额外奖励不能重掷。导爆为初始固定额外项，不属于后续额外奖励候选。 来源：[Relics/ThermalVortexCore.cs:858](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/ThermalVortexCore.cs:858>)、[RewardPools/RewardPoolDefinition.cs:283](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolDefinition.cs:283>)。
+击败普通怪有20%概率出现一个额外牌组卡包，击败精英或首领必定出现一个。卡包从本局额外奖励池抽取3个不同候选，可选1张或跳过。导爆为初始固定额外项。普通商店每店可购买一包，价格使用删卡的起价、涨幅和商店折扣，买包与删卡各自累计次数。确认选牌后扣款和涨价，取消保留原价及库存。火堆选择「祈祷」可连续打开两包，每包各选一张或跳过，最后结束本次火堆行动。 来源：[ThermalVortexCore.cs](../ThermalVortexCode/Relics/ThermalVortexCore.cs)、[RewardPoolDefinition.cs](../ThermalVortexCode/RewardPools/RewardPoolDefinition.cs)。
 
 ### 控制的共享生命
 
@@ -130,7 +130,7 @@ MonsterIdentity仅解出混沌当前完整复制的有效卡，并处理火极/�
 
 ## 标准奖励池、自定义目录与预设
 
-标准模式沿原生奖励路径；自定义模式保存70–90个主卡目录ID与10个额外目录ID，多人共享选卡固定为每人80个主卡ID，实际起始牌组仍为11张。主卡必含5个固定初始种类；额外必含导爆，其余9种自由选择。自选主卡Common/Uncommon/Rare各至少3种。目录要求非空、无重复、ID当前可解析、位于正确候选范围并含全部固定项。奖励池定义写入schemaVersion=3、rulesVersion=2，版本1/2的旧60张运行快照继续按历史规则读取；旧预设保留编辑，新局需补足当前要求。 来源：[张数规则](../ThermalVortexCode/RewardPools/RewardPoolSizePolicy.cs)、[奖励池定义](../ThermalVortexCode/RewardPools/RewardPoolDefinition.cs)。
+卡组管理器第一项固定为「原版卡组」，选中后以标准模式使用武藤游戏原有的起始牌组和完整奖励池。标准模式沿原生奖励路径；自定义模式保存70–90个主卡目录ID与10个额外目录ID，多人共享选卡固定为每人80个主卡ID，实际起始牌组仍为11张。主卡必含5个固定初始种类；额外必含导爆，其余9种自由选择。自选主卡Common/Uncommon/Rare各至少3种。目录要求非空、无重复、ID当前可解析、位于正确候选范围并含全部固定项。奖励池定义写入schemaVersion=3、rulesVersion=2，版本1/2的旧60张运行快照继续按历史规则读取；旧预设保留编辑，新局需补足当前要求。 来源：[张数规则](../ThermalVortexCode/RewardPools/RewardPoolSizePolicy.cs)、[奖励池定义](../ThermalVortexCode/RewardPools/RewardPoolDefinition.cs)。
 
 主卡可选来源固定顺序为武藤游戏、战士Ironclad、静默Silent、故障Defect、亡灵契约师Necrobinder、储君Regent；各来源内部按Common/Uncommon/Rare及完整ModelId稳定排列。武藤游戏奖励候选的代码期望数83，全部额外候选期望数17；外来角色目录来自当前已加载原生模型，不在文档中固定其总数。生成专用、封印部件、古代限定等并不因此变成普通奖励。 来源：[RewardPools/RewardPoolCatalog.cs:21](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolCatalog.cs:21>)、[RewardPools/RewardPoolCatalog.cs:18](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolCatalog.cs:18>)、[Patches/ThermalVortexRewardFilters.cs:17](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ThermalVortexRewardFilters.cs:17>)。
 
@@ -150,7 +150,7 @@ MonsterIdentity仅解出混沌当前完整复制的有效卡，并处理火极/�
 
 事件候选黑名单耗尽时兼容入口可放宽去重以允许重复候选；商店不走这一去重放宽分支。异常后备只在兼容代码认可的范围重建候选，不代表任意异常静默成功。ArcaneScroll在本角色上从当前允许主卡池的Rare候选生成，无升级随机；虽然可按原生Cards值生成多个候选，当前实现只取第1个加入牌组，未提供另一个选择界面。 来源：[Patches/CardFactoryEventCompatibilityPatch.cs:30](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/CardFactoryEventCompatibilityPatch.cs:30>)、[Patches/ArcaneScrollCompatibilityPatch.cs:37](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ArcaneScrollCompatibilityPatch.cs:37>)。
 
-预设库允许创建、保存、复制、重命名、删除与选择；每项有稳定GUID、名称、主/额外ID列表、创建/更新时间，库保存ActivePresetId。草稿可以尚未满足60/10等玩法要求而保存或选中；只有验证通过的预设才暂存为可开局配置，无效项会清除待开局配置。删除当前活动预设切回标准；排序按更新时刻倒序及ID稳定排序。库结构错误、重复GUID、无效时间或不存在的活动ID与“可编辑但尚未完成的草稿”分开处理。 来源：[RewardPools/RewardPoolPresetModels.cs:5](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetModels.cs:5>)、[RewardPools/RewardPoolPresetService.cs:251](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:251>)、[RewardPools/RewardPoolPresetService.cs:452](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:452>)、[RewardPools/RewardPoolPresetService.cs:343](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:343>)。
+预设库允许创建、保存、复制、重命名、删除与选择；每项有稳定GUID、名称、主/额外ID列表、创建/更新时间，库保存ActivePresetId。新建Genesis时立即保存独立的空预设，可之后继续编辑或删除。草稿可以尚未满足60/10等玩法要求而保存或选中；只有验证通过的预设才暂存为可开局配置，无效项会清除待开局配置。删除当前活动预设切回标准；排序按更新时刻倒序及ID稳定排序。库结构错误、重复GUID、无效时间或不存在的活动ID与“可编辑但尚未完成的草稿”分开处理。 来源：[RewardPools/RewardPoolPresetModels.cs:5](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetModels.cs:5>)、[RewardPools/RewardPoolPresetService.cs:251](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:251>)、[RewardPools/RewardPoolPresetService.cs:452](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:452>)、[RewardPools/RewardPoolPresetService.cs:343](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:343>)。
 
 运行配置保存在Godot用户数据目录下mod_configs/ThermalVortex.reward_pool_presets.json及其.bak；兼容的上次单一构筑文件为mod_configs/ThermalVortex.reward_pool.json及其.bak。写入使用临时文件、刷新、替换与读回验证；主文件无效会尝试有效备份并按可用条件恢复。预设库是权威，成功预设事务后旧单构筑镜像保存失败不会回滚已成功的库/待开局状态。这些是实际用户配置，不能当作文档清理产物删除。 来源：[RewardPools/RewardPoolPresetStore.cs:6](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetStore.cs:6>)、[RewardPools/RewardPoolLastBuildStore.cs:6](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolLastBuildStore.cs:6>)、[RewardPools/RewardPoolPresetService.cs:343](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/RewardPools/RewardPoolPresetService.cs:343>)。
 
@@ -168,9 +168,11 @@ MonsterIdentity仅解出混沌当前完整复制的有效卡，并处理火极/�
 
 Genesis使用240分共同预算，65–85个自选主牌与9个自选额外牌计分，固定5种主牌和导爆为0分。原版基价为`1 + floor(8 × picked / offered + 0.5)`，有依据的人工偏移限±1，最终为1—10分；武藤游戏牌逐牌使用注明参照与配套门槛的设计估价。统计快照来自[STS Tracker](https://ststracker.app/cards?asc=10)的单人A10、v0.107.1口径，只匹配本地合法原版候选，不把其他Mod或无色条目直接混入同一标尺。pick率受上传样本、出现时机和既有构筑影响，不等于独立强度；240分是首版设计预算。完整积分、来源和预组成员随程序集内嵌，运行时不联网。新增选择不得超分；已有超分草稿可保存和删改，开局前重新核算。已经开始的局保存当时的分值、总分、预算与版本，读档不按新价格重算。
 
-单人三选一不使用积分：先进行三轮流派包三选一，每轮尽可能展示不同角色，允许跨轮再次选同角色。新会话的主题包保留原19–21张目标，固定双轴核心与桥接牌；每包仅1–3个配件位从该角色的有限合法奖励牌名单中抽取，排除核心与重复牌，不改原始预组成员。候选实际成员与已选成员一同保存，旧会话继续原来的固定成员；Genesis整包导入仍使用原始预组。候选保留后续可完成性，前三包去重总量必须为45–65张；随后默认进行四轮泛用包选择，每轮从三个不同的5张随机包中选一个，共加入20张；各轮排除已选成员并保留后续完成稀有度要求的空间。泛用轮数可在创建会话时调整为20的正整数约数，每轮张数随总量20平均分配并随会话保存。已有旧版会话保留原来的轮数、候选与流程：schema2仍为一次20张，schema3仍为原来保存的泛用轮数，均不重抽。加上5张固定主牌后为70–90张，再从额外候选三选一补足9种。泛用包使用独立的明确白名单，不直接把所有支援包余牌视为泛用。独立随机状态、完整候选包和当前选择随操作保存；关闭界面或重启继续同一轮，不提供单轮刷新、撤销或完成后的自由换牌，可明确放弃整次重新开始。
+单人三选一不使用积分：先进行三轮流派包三选一，每轮尽可能展示不同角色，允许跨轮再次选同角色。新会话的主题包保留原19–21张目标，固定双轴核心与桥接牌；每包仅1–3个配件位从该角色的有限合法奖励牌名单中抽取，排除核心与重复牌，不改原始预组成员。候选实际成员与已选成员一同保存，旧会话继续原来的固定成员；Genesis整包导入仍使用原始预组。候选保留后续可完成性，前三包去重总量必须为45–65张。
 
-三选一会话保存在Godot用户数据目录的`mod_configs/ThermalVortex.reward_pool_draft.json`及其备份；保存失败不推进可见选择，损坏文件保留并报告。完成会话通过当前角色页上下文暂存，成功应用到新局后记录消费；消费后的选中模式要求下一局重新构筑。继续已有局只使用核心遗物中的最终奖励池。相关实现：[构筑规则](../ThermalVortexCode/RewardPools/RewardPoolConstruction.cs)、[数据目录](../ThermalVortexCode/RewardPools/RewardPoolConstructionCatalog.cs)、[三选一会话](../ThermalVortexCode/RewardPools/RewardPoolDraftService.cs)、[界面](../ThermalVortexCode/Patches/RewardPoolBuilderConstruction.cs)。本次新增构筑流程不改变已有跨职业战斗结算；实际画面与交互需要单独获授权的进游戏测试确认。
+新会话在流派包之后，从启动、解场防御、续航三个过渡包中选一个，加入8张新牌；接着进行四轮杂卡十选三，每轮加入3张主奖励候选。全屏选包界面直接点击卡包作选择，右键或手柄详情键查看完整成员。杂卡点选时卡牌原位亮蓝边，再点可取消；满三张后右下角的勾可用，按勾才提交本轮。过渡包和杂卡共20张，加上5张固定主牌后为70–90张，再从额外候选三选一补足9种。泛用牌使用独立白名单，各轮排除已选牌并保留完成稀有度要求的空间。旧会话继续使用各自已保存的泛用包、轮数、候选与流程。关闭界面或重启后继续同一批已保存的候选；本轮提交后进入下一轮。
+
+三选一会话保存在Godot用户数据目录的`mod_configs/ThermalVortex.reward_pool_draft.json`及其备份。可同时保留多份独立会话，分别续玩或删除。旧单会话保留原有进度；保存失败不推进可见选择，损坏文件保留并报告。完成后可启用一份会话，通过当前角色页上下文暂存，成功应用到新局后记录消费并取消启用。未完成和已消费的会话保留构筑记录，普通新局可以直接开始。继续已有局只使用核心遗物中的最终奖励池。相关实现：[构筑规则](../ThermalVortexCode/RewardPools/RewardPoolConstruction.cs)、[数据目录](../ThermalVortexCode/RewardPools/RewardPoolConstructionCatalog.cs)、[三选一会话](../ThermalVortexCode/RewardPools/RewardPoolDraftService.cs)、[界面](../ThermalVortexCode/Patches/RewardPoolBuilderConstruction.cs)。本次新增构筑流程不改变已有跨职业战斗结算；实际画面与交互需要单独获授权的进游戏测试确认。
 
 多人共享选卡用于2–4人全员武藤游戏的标准新局。桌面提供`(人数+1)×3`个不同流派包，每人同时选择三个。不同玩家选择同包，或选包成员存在相同ID，均为冲突；同一玩家包内重合成员去重。候选生成先寻找每人三个包、跨玩家成员无重合且可补满的分配见证，多出的三个包可以无人选择。确认前公开全部意向，不按请求先后决定赢家。
 
@@ -182,10 +184,12 @@ Genesis使用240分共同预算，65–85个自选主牌与9个自选额外牌�
 
 | 遗物 | 当前效果与取得路径 | 来源 |
 |---|---|---|
-| 未完成的千年积木 ThermalVortexCore | 起始遗物；管理额外牌组、召唤、战斗统计与奖励池状态；建筑师结尾不再提供或自动执行升级 | [Relics/ThermalVortexCore.cs:259](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/ThermalVortexCore.cs:259>) |
-| 千年积木 AncientThermalVortexCore | Ancient稀有度，继承核心全部状态；本方常规抽牌前将弃牌堆中DeckVersion仍是XyzSummon的实体置于抽牌顶；不包含所有名字含融合的牌 | [Relics/AncientThermalVortexCore.cs:18](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/AncientThermalVortexCore.cs:18>) |
+| 未完成的千年积木 ThermalVortexCore | 起始遗物，管理额外牌组、召唤、战斗统计与奖励池状态。自己的回合开始时，若手牌中没有融合，先从抽牌堆或弃牌堆取1张融合加入手牌，抽牌堆优先。随后进行常规抽牌。建筑师结尾不再提供或自动执行升级 | [ThermalVortexCore.cs](../ThermalVortexCode/Relics/ThermalVortexCore.cs) |
+| 千年积木 AncientThermalVortexCore | Ancient稀有度，继承核心全部状态。回手改在融合打出后结算，将原本会进入弃牌堆的同一张融合移入手牌 | [AncientThermalVortexCore.cs](../ThermalVortexCode/Relics/AncientThermalVortexCore.cs) |
 | 叠层线圈 LayeredCoil | Uncommon；每本方回合首次捕获拥有者自己IsAutoPlay且实际MonsterCard的出牌后，为遗物拥有者抽1牌；XyzMonsterCard不符合该具体类型判断 | [Relics/LayeredCoil.cs:15](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/LayeredCoil.cs:15>) |
 | 古老牙齿 ArchaicTooth | 欧洛巴斯的原生先古选项。对武藤游戏，永久牌组没有电磁圈且有可移除的α号电圈、α号磁圈各至少1张时提供合成；每种选升级最高的1张，平级按永久牌组顺序。取得时复查条件，各移除1张素材后加入1张电磁圈；条件失效不移除素材、不生成结果。每张已升级素材贡献1级，合成基础等级为0／1／2级、基础费用为3／2／1；原生入牌效果继续正常结算，可能继续改变结果。选项预览两类素材及按素材贡献等级生成的电磁圈，并沿用原生先古选项结束流程 | [Patches/ArchaicToothCompatibilityPatch.cs:84](<../ThermalVortexCode/Patches/ArchaicToothCompatibilityPatch.cs:84>)、[取得流程:120](<../ThermalVortexCode/Patches/ArchaicToothCompatibilityPatch.cs:120>)、[预览:161](<../ThermalVortexCode/Patches/ArchaicToothCompatibilityPatch.cs:161>) |
+
+两版积木都识别来自永久牌组的融合和战斗中生成或复制的融合，均遵循手牌上限。未完成的积木使回合开始的常规抽牌跳过所有融合，包括重洗弃牌堆后遇到的融合。没有其他可抽到的牌时结束这次抽牌。升级积木使用原生出牌落点，复诵全部结算后只移动一次，消耗和移出战斗按原生规则结算。已经打出后取消素材选择时仍会回手。 [未完成的千年积木](../ThermalVortexCode/Relics/ThermalVortexCore.cs) · [千年积木](../ThermalVortexCode/Relics/AncientThermalVortexCore.cs)
 
 建筑师结尾只保留四组定稿对话及每句一个原生推进按钮。“完成千年积木”“合成电磁圈”的结尾入口与专用奖励回调已移除：首句和后续刷新均不追加奖励选项，推进对白也不会自动升级或替换遗物、移除素材牌或发放电磁圈。电磁圈卡牌定义、数值和普通奖励排除规则保留。DustyTome对本角色把AncientCard指定为PrimalGodFara的逻辑保留。来源：[Patches/ThermalVortexAncientOptionsPatch.cs](../ThermalVortexCode/Patches/ThermalVortexAncientOptionsPatch.cs)、[Cards/ElectromagneticCircle.cs](../ThermalVortexCode/Cards/ElectromagneticCircle.cs)。
 
@@ -236,7 +240,7 @@ Genesis使用240分共同预算，65–85个自选主牌与9个自选额外牌�
 
 顶部额外牌组入口区分永久拥有与本战斗剩余，顶部悬浮仍显示本场剩余/拥有总数；奖励池入口展示主/额外目录。额外牌组查看界面逐张展示永久拥有的实体，升级牌沿用原生绿色名称与“+”标记，不在卡牌效果末尾显示同类剩余/拥有数量。每张卡牌下方原生位置标签改为“已使用”或“未使用”，仅此查看界面使用该标签；手牌、抽牌堆、弃牌堆、奖励池及其他选牌界面保持各自显示。战斗中按该实体是否仍可从本场额外牌组取用判断：提取或消耗后显示“已使用”，返还并恢复可取用后显示“未使用”；战斗外全部显示“未使用”。它们复用原生牌堆浏览界面及临时代理，关闭时恢复状态；虚拟牌组按钮没有原生主牌组快捷键。悬浮卡组使用网格，额外怪兽小图保持专用色，升级和附魔显示读对应条目。遗物悬浮在打开牌堆时有退场清理，避免旧浮层遮挡。 来源：[Patches/ExtraDeckTopBarPatch.cs:46](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ExtraDeckTopBarPatch.cs:46>)、[Patches/ExtraDeckHoverTipGridPatch.cs:11](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ExtraDeckHoverTipGridPatch.cs:11>)、[Patches/ExtraDeckTinyCardColorPatch.cs:11](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/ExtraDeckTinyCardColorPatch.cs:11>)、[Patches/RelicHoverCardPileFadePatch.cs:14](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Patches/RelicHoverCardPileFadePatch.cs:14>)。
 
-额外牌组原生附魔使用带版本标记的稳定JSON保存模型名称、数量及完整属性；无附魔旧条目继续兼容，未知ID跳过、异常升级按0、超额条目按原上限截取。每个附魔字段先完整解析；无法确认身份的旧网络编号附魔或损坏的附魔数据会明确阻止读取和保存，含附魔条目也不能被静默跳过或截断。保留原存档，不能按当前编号猜测恢复。吞噬成长仍只属于本场战斗，不写入永久附魔字段。
+额外牌组原生附魔使用带版本标记的稳定JSON保存模型名称、数量及完整属性；无附魔旧条目继续兼容，未知ID跳过、异常升级按0，有效条目全部读入。每个附魔字段先完整解析；无法确认身份的旧网络编号附魔或损坏的附魔数据会明确阻止读取和保存，含附魔条目也不能被静默跳过或截断。保留原存档，不能按当前编号猜测恢复。吞噬成长仍只属于本场战斗，不写入永久附魔字段。
 
 右键卡牌由统一CardInspection输入入口打开原生详细查看；当前拖牌或选目标时右键优先原生取消，并消费对应抬起事件，避免取消后又打开卡牌。普通右键在详情已开时可关闭。悬浮预览牌上的左键被消费，防止点到下层商店/卡牌；详情关闭淡出期间仍阻挡鼠标、按键和手柄按钮穿透。 来源：[CardInspection/CardInspectionInputRouter.cs:53](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/CardInspection/CardInspectionInputRouter.cs:53>)。
 

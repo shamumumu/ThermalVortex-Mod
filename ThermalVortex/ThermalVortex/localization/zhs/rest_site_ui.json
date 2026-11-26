@@ -1,0 +1,5 @@
+{
+    "OPTION_THERMALVORTEX_PRAY.name": "祈祷",
+    "OPTION_THERMALVORTEX_PRAY.description": "打开2个额外牌组卡包。",
+    "OPTION_THERMALVORTEX_PRAY.descriptionDisabled": "此处不能祈祷。"
+}

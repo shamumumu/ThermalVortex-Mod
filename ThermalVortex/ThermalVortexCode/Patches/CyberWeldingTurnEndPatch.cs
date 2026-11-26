@@ -8,7 +8,7 @@ namespace ThermalVortex.ThermalVortexCode.Patches;
 
 // Wait for the complete end-of-turn hook, including every other power's
 // triggered effects, so power enumeration order cannot change Welding damage.
-[HarmonyPatch(typeof(Hook), nameof(Hook.AfterTurnEnd))]
+[HarmonyPatch(typeof(Hook), nameof(Hook.AfterSideTurnEnd))]
 internal static class CyberWeldingTurnEndPatch
 {
     private static void Postfix(

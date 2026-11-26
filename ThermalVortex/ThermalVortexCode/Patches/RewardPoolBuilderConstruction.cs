@@ -31,7 +31,6 @@ internal sealed partial class RewardPoolBuilderSession
     private readonly List<ConstructionBannerBinding> _constructionBanners = [];
     private ConstructionPackageGridBinding _constructionPackageGrid;
     private SceneTree _constructionPackageTree;
-    private Label _draftProgress;
     private bool _draftOfferCommitInProgress;
     private Button _packagesButton;
     private Button _freeActionButton;
@@ -69,11 +68,13 @@ internal sealed partial class RewardPoolBuilderSession
         });
         _constructionActions.AddChild(genesis);
         var state = RewardPoolDraftService.GetState();
-        var draft = CreateConstructionButton(Localize(state is null || (state.Stage == RewardPoolDraftStage.Consumed && !state.IsLegacy)
-            ? "constructionStartDraft" : "constructionContinueDraft"), 0f, 17);
+        var draftLabel = state?.Stage == RewardPoolDraftStage.Consumed
+            ? Localize("constructionDraft") + " · " + Localize("constructionViewChosen")
+            : Localize(state is null ? "constructionStartDraft" : "constructionContinueDraft");
+        var draft = CreateConstructionButton(draftLabel, 0f, 17);
         _draftActionButton = draft;
         draft.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        if (RewardPoolDraftService.IsSelected)
+        if (state?.Stage != RewardPoolDraftStage.Consumed && RewardPoolDraftService.IsSelected)
             draft.Text += " · " + Localize("managerActive");
         BindLibraryAction(draft, OpenDraft);
         _constructionActions.AddChild(draft);
@@ -324,7 +325,7 @@ internal sealed partial class RewardPoolBuilderSession
         {
             if (input is InputEventMouseButton || input is InputEventKey { Echo: true })
                 return;
-            if (!input.IsActionPressed(MegaInput.accept, false, false))
+            if (!input.IsActionPressed(MegaInput.confirm, false, false))
                 return;
             InspectConstructionSelection(list, entries());
             Root.GetViewport()?.SetInputAsHandled();
@@ -360,8 +361,7 @@ internal sealed partial class RewardPoolBuilderSession
             Root.GetViewport()?.SetInputAsHandled();
     }
 
-    private void ShowConstructionCards(string title, IEnumerable<string> ids, string description = null,
-        Action choose = null, string optionId = null)
+    private void ShowConstructionCards(string title, IEnumerable<string> ids, string description = null)
     {
         var cardIds = ids.ToArray();
         var entries = cardIds.Select(id => _mainById.GetValueOrDefault(id) ?? _extraById.GetValueOrDefault(id))
@@ -427,48 +427,6 @@ internal sealed partial class RewardPoolBuilderSession
             modal.AddChild(close);
         }
 
-        if (choose is not null && entries.Length == cardIds.Length)
-        {
-            var confirm = ResourceLoader.Load<PackedScene>("res://scenes/ui/confirm_button.tscn")?.Instantiate<NConfirmButton>();
-            if (confirm is not null)
-            {
-                confirm.Name = "ThermalVortexConstructionPreviewChoose";
-                confirm.SetMeta("offerId", optionId ?? string.Empty);
-                // Browsing/inspection accept must never submit the whole package.
-                confirm.OverrideHotkeys([]);
-                confirm.OffsetTop = -110f;
-                confirm.OffsetBottom = 0f;
-                confirm.TooltipText = Localize("constructionChoose") + " · " + title;
-                confirm.Ready += () => confirm.Enable();
-                confirm.GetNode<Control>("Image/Icon").Visible = false;
-                var text = CreateConstructionLabel(Localize("constructionChoose"), 25, HorizontalAlignment.Center);
-                text.VerticalAlignment = VerticalAlignment.Center;
-                text.MouseFilter = Control.MouseFilterEnum.Ignore;
-                text.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-                confirm.AddChild(text);
-                confirm.Connect(NButton.SignalName.Released, Callable.From<NButton>(_ =>
-                {
-                    if (!_disposed && !_closing && ReferenceEquals(_modalRoot, modal)
-                        && modal.IsInsideTree() && modal.IsVisibleInTree() && !IsOwnedCardInspectionVisible())
-                        choose();
-                }));
-                modal.AddChild(confirm);
-            }
-            else
-            {
-                var confirmButton = CreateConstructionButton(Localize("constructionChoose"), 160f);
-                confirmButton.Name = "ThermalVortexConstructionPreviewChoose";
-                confirmButton.SetMeta("offerId", optionId ?? string.Empty);
-                confirmButton.Pressed += () =>
-                {
-                    if (!_disposed && !_closing && ReferenceEquals(_modalRoot, modal)
-                        && modal.IsInsideTree() && !IsOwnedCardInspectionVisible()) choose();
-                };
-                confirmButton.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomRight);
-                confirmButton.Position = new Vector2(-180f, -100f);
-                modal.AddChild(confirmButton);
-            }
-        }
         if (!AddConstructionPackageGrid(content, modal, entries))
         {
             var list = CreateConstructionCardList(content);
@@ -490,13 +448,22 @@ internal sealed partial class RewardPoolBuilderSession
 
     private void OpenDraft()
     {
-        var state = RewardPoolDraftService.GetState();
-        if (state is not null && (state.IsLegacy || state.Stage != RewardPoolDraftStage.Consumed))
+        if (RewardPoolDraftService.GetState() is not null)
         {
             ShowDraftView();
             return;
         }
         StartNewDraft();
+    }
+
+    private void OpenDraft(string sessionId)
+    {
+        if (!RewardPoolDraftService.TryOpenSession(sessionId, out var error))
+        {
+            ShowConstructionNotice(Localize("constructionDraft"), error);
+            return;
+        }
+        ShowDraftView();
     }
 
     private void StartNewDraft()
@@ -506,14 +473,14 @@ internal sealed partial class RewardPoolBuilderSession
             ShowConstructionNotice(Localize("constructionDraft"), error);
             return;
         }
-        _selectionChanged = true;
+        _libraryChanged = true;
         ShowDraftView();
     }
 
     private void ShowDraftView()
     {
         var state = RewardPoolDraftService.GetState();
-        if (state is null || (state.Stage == RewardPoolDraftStage.Consumed && !state.IsLegacy))
+        if (state is null)
         {
             ShowLibraryView();
             return;
@@ -528,48 +495,55 @@ internal sealed partial class RewardPoolBuilderSession
         _showUpgradePreview = false;
         var root = new VBoxContainer();
         root.AddThemeConstantOverride("separation", 12);
-        root.AddChild(CreateConstructionLabel(Localize("constructionDraft"), 29, HorizontalAlignment.Left));
-        var progress = CreateConstructionLabel(LocalizeCount("constructionDraftProgress", ("Packages", state.PackagePicks),
-            ("PackageRounds", RewardPoolDraftService.PackageRoundCount),
-            ("Generic", state.GenericRoundsCompleted), ("GenericRounds", state.GenericRoundCount),
-            ("Main", state.MainCardIds.Count), ("Total", state.MainCardIds.Count + RewardPoolCatalog.RequiredMainCardCount),
-            ("Minimum", RewardPoolSizePolicy.MinMainTotal), ("Maximum", RewardPoolSizePolicy.MaxMainTotal),
-            ("Extra", state.ExtraCardIds.Count)), 18, HorizontalAlignment.Left);
-        progress.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        var choosingPack = IsDraftPackStage(state.Stage) && !state.IsLegacy;
+        var title = CreateConstructionLabel(DraftStageTitle(state), 42, HorizontalAlignment.Left);
+        title.AddThemeColorOverride("font_color", new Color("efc851"));
+        root.AddChild(title);
+        var progress = CreateDraftPrompt(FormatDraftProgress(state));
         progress.Name = "ThermalVortexDraftProgress";
         progress.SetMeta("genericRoundCount", state.GenericRoundCount);
         progress.SetMeta("genericRoundsCompleted", state.GenericRoundsCompleted);
         progress.SetMeta("genericCardsPerRound", state.GenericCardsPerRound);
-        _draftProgress = progress;
-        progress.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         root.AddChild(progress);
-        var instructions = CreateConstructionLabel(state.IsLegacy ? Localize("constructionLegacyDraftHint")
-            : state.Stage == RewardPoolDraftStage.Packages
-            ? LocalizeCount("constructionDraftPackageHint", ("PackageRounds", RewardPoolDraftService.PackageRoundCount))
-            : state.Stage == RewardPoolDraftStage.GenericPackages
-            ? LocalizeCount("constructionDraftGenericHint", ("CardsPerRound", state.GenericCardsPerRound),
-                ("GenericRounds", state.GenericRoundCount),
-                ("Round", Math.Min(state.GenericRoundsCompleted + 1, state.GenericRoundCount)))
+        var pickCount = RewardPoolDraftService.GenericCardPickCount;
+        var instructions = CreateDraftPrompt(state.Stage == RewardPoolDraftStage.Consumed
+            ? Localize("constructionSaveDraftHint")
+            : state.IsLegacy ? Localize("constructionLegacyDraftHint")
+            : choosingPack
+            ? ManagerText("左键选包，右键查看包内卡牌。", "Left-click to choose a pack. Right-click to see its cards.")
+            : state.Stage == RewardPoolDraftStage.GenericCards
+            ? ManagerText($"选 [blue]{pickCount}[/blue] 张牌，点右下角的勾加入主奖励池。",
+                $"Pick [blue]{pickCount}[/blue] cards, then use the checkmark to add them to the main reward pool.")
             : Localize(state.Stage == RewardPoolDraftStage.Complete ? "constructionDraftCompleteHint"
-                : "constructionDraftPickHint"), 17, HorizontalAlignment.Left);
-        instructions.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                : "constructionDraftPickHint"));
         root.AddChild(instructions);
+
+        if (choosingPack)
+        {
+            ShowDraftPackChoices(root, state);
+            return;
+        }
         var controls = new GridContainer { Columns = 3 };
         _draftControls = controls;
         controls.AddThemeConstantOverride("h_separation", 10);
         controls.AddThemeConstantOverride("v_separation", 6);
         root.AddChild(controls);
-        var back = CreateConstructionButton(Localize("builderBack"), 165f, 17);
+        var back = CreateDraftActionButton(Localize("builderBack"));
         back.Pressed += () => ShowLibraryView();
         controls.AddChild(back);
-        var chosen = CreateConstructionButton(Localize("constructionViewChosen"), 160f, 17);
+        var chosen = CreateDraftActionButton(Localize("constructionViewChosen"));
         chosen.Pressed += () => ShowConstructionCards(Localize("constructionViewChosen"), state.MainCardIds.Concat(state.ExtraCardIds));
         controls.AddChild(chosen);
-        var restart = CreateConstructionButton(Localize("constructionRestartDraft"), 170f, 17);
-        restart.Pressed += () => ShowChoiceModal(Localize("constructionRestartDraft"), Localize("constructionRestartPrompt"),
-            Localize("constructionRestartDraft"), () => { CloseModal(); StartNewDraft(); },
-            Localize("managerCancel"), CloseModal, primaryIsDestructive: true);
-        controls.AddChild(restart);
+        var create = CreateDraftActionButton(ManagerText("新建三选一", "New draft"));
+        create.Pressed += StartNewDraft;
+        controls.AddChild(create);
+
+        if (state.Stage == RewardPoolDraftStage.GenericCards && !state.IsLegacy)
+        {
+            _draftChoiceGrid = null;
+            ShowSingleCardDraftRound(root, state, back);
+            return;
+        }
 
         var scroll = new ScrollContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FollowFocus = true };
@@ -583,7 +557,7 @@ internal sealed partial class RewardPoolBuilderSession
             var use = CreateConstructionButton(Localize("constructionUseDraft"), 200f);
             use.Pressed += () =>
             {
-                if (!RewardPoolDraftService.TrySelect(out var error))
+                if (!RewardPoolDraftService.TrySelect(state.SessionId, out var error))
                 {
                     ShowConstructionNotice(Localize("constructionDraft"), error);
                     return;
@@ -593,7 +567,7 @@ internal sealed partial class RewardPoolBuilderSession
             };
             _draftChoiceGrid.AddChild(use);
         }
-        if (state.Stage == RewardPoolDraftStage.Complete || state.IsLegacy)
+        if (state.Stage is RewardPoolDraftStage.Complete or RewardPoolDraftStage.Consumed || state.IsLegacy)
         {
             var save = CreateConstructionButton(Localize("constructionSaveDraft"), 220f);
             save.Pressed += () => ShowTextModal(Localize("constructionSaveDraft"), Localize("constructionSaveDraftHint"),
@@ -620,6 +594,166 @@ internal sealed partial class RewardPoolBuilderSession
         DeferFocus(FindFirstFocusable(_draftChoiceGrid) ?? back);
     }
 
+    private static string FormatDraftProgress(RewardPoolDraftState state)
+    {
+        var packages = $"{state.PackagePicks}/{RewardPoolDraftService.PackageRoundCount}";
+        var generic = $"{state.GenericRoundsCompleted}/{state.GenericRoundCount}";
+        var mainCount = state.MainCardIds.Count + RewardPoolCatalog.RequiredMainCardCount;
+        var extra = $"{state.ExtraCardIds.Count}/{RewardPoolCatalog.SelectableExtraCardCount}";
+        if (state.UsesSingleCardDraft)
+        {
+            var transition = state.SelectedGenericCardIds.Count >= RewardPoolDraftService.TransitionPackageSize ? 1 : 0;
+            return string.Join(" · ",
+                Step(RewardPoolDraftStage.Packages, ManagerText($"预组 {packages}", $"Theme packs {packages}")),
+                Step(RewardPoolDraftStage.TransitionPackages, ManagerText($"过渡包 {transition}/1", $"Transition pack {transition}/1")),
+                Step(RewardPoolDraftStage.GenericCards, ManagerText($"杂卡 {generic}", $"Flex cards {generic}")),
+                ManagerText($"主池 {mainCount}", $"Main pool {mainCount}"),
+                Step(RewardPoolDraftStage.Extra, ManagerText($"额外牌 {extra}", $"Extra cards {extra}")));
+        }
+
+        var limits = $"{RewardPoolSizePolicy.MinMainTotal}–{RewardPoolSizePolicy.MaxMainTotal}";
+        return string.Join(" · ",
+            Step(RewardPoolDraftStage.Packages, ManagerText($"预组 {packages}", $"Packages {packages}")),
+            Step(RewardPoolDraftStage.GenericPackages, ManagerText($"泛用包 {generic}", $"Support package {generic}")),
+            Step(RewardPoolDraftStage.Main, ManagerText($"主池 {mainCount} / {limits}（奖励 {state.MainCardIds.Count}）",
+                $"Main pool {mainCount} / {limits} ({state.MainCardIds.Count} rewards)")),
+            Step(RewardPoolDraftStage.Extra, ManagerText($"额外牌 {extra}", $"Extra {extra}")));
+
+        string Step(RewardPoolDraftStage stage, string text) => state.Stage == stage ? $"[gold]{text}[/gold]" : text;
+    }
+
+    private static MegaRichTextLabel CreateDraftPrompt(string text)
+    {
+        var label = new MegaRichTextLabel
+        {
+            BbcodeEnabled = true,
+            FitContent = true,
+            ScrollActive = false,
+            AutoSizeEnabled = false,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        if (ResourceLoader.Load<Font>("res://themes/kreon_regular_shared.tres") is { } font)
+            label.AddThemeFontOverride("normal_font", font);
+        label.AddThemeFontSizeOverride("normal_font_size", 24);
+        label.AddThemeColorOverride("default_color", new Color("fff6e2"));
+        label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.25f));
+        label.AddThemeConstantOverride("shadow_offset_x", 3);
+        label.AddThemeConstantOverride("shadow_offset_y", 2);
+        label.SetTextAutoSize(text);
+        return label;
+    }
+
+    private static bool IsDraftPackStage(RewardPoolDraftStage stage) => stage is
+        RewardPoolDraftStage.Packages or RewardPoolDraftStage.TransitionPackages or RewardPoolDraftStage.GenericPackages;
+
+    private static string DraftStageTitle(RewardPoolDraftState state) => state.Stage switch
+    {
+        RewardPoolDraftStage.Packages => ManagerText("流派预组", "Theme packs"),
+        RewardPoolDraftStage.TransitionPackages => ManagerText("过渡包", "Transition pack"),
+        RewardPoolDraftStage.GenericPackages => ManagerText("泛用包", "General packs"),
+        RewardPoolDraftStage.GenericCards => ManagerText("杂卡十选三", "Flex cards"),
+        RewardPoolDraftStage.Extra => ManagerText("额外牌", "Extra cards"),
+        _ => Localize("constructionDraft")
+    };
+
+    private void ShowDraftPackChoices(VBoxContainer content, RewardPoolDraftState state)
+    {
+        _draftControls = null;
+        var page = new Control();
+        var inset = new MarginContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        inset.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        inset.AddThemeConstantOverride("margin_bottom", 98);
+        page.AddChild(inset);
+        inset.AddChild(content);
+
+        var scroll = new ScrollContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill,
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FollowFocus = true };
+        content.AddChild(scroll);
+        _draftChoiceGrid = new GridContainer { Columns = 3, SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.ShrinkCenter };
+        _draftChoiceGrid.AddThemeConstantOverride("h_separation", 28);
+        _draftChoiceGrid.AddThemeConstantOverride("v_separation", 24);
+        scroll.AddChild(_draftChoiceGrid);
+        foreach (var optionId in state.OfferIds)
+            AddDraftPackChoice(optionId, state);
+
+        var nativeBack = ResourceLoader.Load<PackedScene>("res://scenes/ui/back_button.tscn")?.Instantiate<NBackButton>();
+        Control back;
+        if (IsValid(nativeBack))
+        {
+            nativeBack.Name = "ThermalVortexDraftPacksBack";
+            nativeBack.OffsetTop = -92f;
+            nativeBack.OffsetBottom = 0f;
+            nativeBack.TooltipText = Localize("builderBack");
+            nativeBack.Ready += () => nativeBack.Enable();
+            nativeBack.Connect(NClickableControl.SignalName.Released, Callable.From<NClickableControl>(_ => Back()));
+            page.AddChild(nativeBack);
+            back = nativeBack;
+        }
+        else
+        {
+            var fallback = CreateConstructionButton(Localize("builderBack"), 165f);
+            fallback.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomLeft);
+            fallback.Position = new Vector2(0f, -65f);
+            fallback.Pressed += Back;
+            page.AddChild(fallback);
+            back = fallback;
+        }
+        ReplaceView(page, ViewMode.Draft);
+        DeferFocus(FindFirstFocusable(_draftChoiceGrid) ?? back);
+
+        void Back()
+        {
+            // Native back has a game-wide shortcut, which must not close the
+            // underlying draft while its own package browser is on top.
+            if (!_disposed && !_closing && ReferenceEquals(_activeViewRoot, page)
+                && !IsValid(_modalRoot) && !IsOwnedCardInspectionVisible())
+                ShowLibraryView();
+        }
+    }
+
+    private void AddDraftPackChoice(string optionId, RewardPoolDraftState state)
+    {
+        var body = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        body.AddThemeConstantOverride("separation", 9);
+        _draftChoiceGrid.AddChild(body);
+        var package = state.Stage == RewardPoolDraftStage.Packages
+            ? RewardPoolConstructionCatalog.Packages.FirstOrDefault(candidate => candidate.Id == optionId) : null;
+        var offer = state.PackageOffers.FirstOrDefault(item => item.Id == optionId);
+        var generic = state.GenericPackageOffers.FirstOrDefault(item => item.Id == optionId);
+        var packageIds = offer?.CardIds ?? package?.CardIds ?? generic?.CardIds;
+        if (packageIds is null)
+        {
+            body.AddChild(CreateConstructionLabel(optionId, 24, HorizontalAlignment.Center));
+            return;
+        }
+        var title = package is not null ? RewardPoolConstructionCatalog.PackageName(package)
+            : state.Stage == RewardPoolDraftStage.TransitionPackages ? TransitionPackName(optionId)
+            : LocalizeCount("constructionGenericPackage", ("Number", state.OfferIds.ToList().IndexOf(optionId) + 1));
+        var description = package is not null ? RewardPoolConstructionCatalog.PackageSynergy(package)
+            : state.Stage == RewardPoolDraftStage.TransitionPackages ? TransitionPackDescription(optionId)
+            : LocalizeCount("constructionGenericPackageDescription", ("Count", packageIds.Count));
+        if (package is not null && state.PackageVariantsEnabled)
+            description += "\n" + Localize("constructionPackageVariationHint");
+
+        AddConstructionBundlePreview(body, packageIds, optionId, title,
+            control => CommitDraftChoice(control, state, optionId),
+            control =>
+            {
+                if (!CanUseDraftChoice(control, state, optionId))
+                    return;
+                control.GrabFocus();
+                ShowConstructionCards(title, packageIds, description);
+            });
+        var name = CreateConstructionLabel(title, 24, HorizontalAlignment.Center);
+        name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        body.AddChild(name);
+        body.AddChild(CreateConstructionLabel(LocalizeCount("constructionCardCount", ("Count", packageIds.Count)),
+            19, HorizontalAlignment.Center));
+    }
+
     private void AddDraftChoice(string optionId, RewardPoolDraftState state)
     {
         var panel = CreateSectionPanel();
@@ -628,52 +762,21 @@ internal sealed partial class RewardPoolBuilderSession
         var body = new VBoxContainer();
         body.AddThemeConstantOverride("separation", 12);
         CreateSectionMargin(panel).AddChild(body);
-        var package = state.Stage == RewardPoolDraftStage.Packages
-            ? RewardPoolConstructionCatalog.Packages.FirstOrDefault(candidate => candidate.Id == optionId) : null;
-        var themeOffer = state.Stage == RewardPoolDraftStage.Packages
-            ? state.PackageOffers.FirstOrDefault(offer => offer.Id == optionId) : null;
-        var generic = state.Stage == RewardPoolDraftStage.GenericPackages
-            ? state.GenericPackageOffers.FirstOrDefault(offer => offer.Id == optionId) : null;
-        var packageIds = themeOffer?.CardIds ?? package?.CardIds ?? generic?.CardIds;
-        var entry = packageIds is not null ? null : _mainById.GetValueOrDefault(optionId) ?? _extraById.GetValueOrDefault(optionId);
-        var title = package is not null ? RewardPoolConstructionCatalog.PackageName(package)
-            : generic is not null ? LocalizeCount("constructionGenericPackage", ("Number", state.GenericPackageOffers.ToList().FindIndex(offer => offer.Id == optionId) + 1))
-            : entry?.Title ?? optionId;
-        var name = CreateConstructionLabel(title, 23, HorizontalAlignment.Center);
-        name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        if (packageIds is not null || entry is null)
-            body.AddChild(name);
-        else
-            name.Free();
-        if (packageIds is not null)
-        {
-            if (package is not null)
-            {
-                body.AddChild(CreateConstructionLabel(Localize(OriginLocalizationKey(package.Origin)), 17, HorizontalAlignment.Center));
-            }
-            AddConstructionBundlePreview(body, packageIds, optionId, () => OpenPackagePreview());
-            var description = CreateConstructionLabel(PackageDescription(),
-                16, HorizontalAlignment.Left);
-            description.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            body.AddChild(description);
-            body.AddChild(CreateConstructionLabel(LocalizeCount("constructionCardCount", ("Count", packageIds.Count)), 17, HorizontalAlignment.Center));
-        }
-        else if (entry is not null)
-        {
+        var entry = _mainById.GetValueOrDefault(optionId) ?? _extraById.GetValueOrDefault(optionId);
+        if (entry is not null)
             AddConstructionCardPreview(body, entry);
-        }
-        var inspect = CreateConstructionButton(Localize(packageIds is not null ? "constructionViewPackage" : "constructionInspect"), 0f, 17);
+        else
+            body.AddChild(CreateConstructionLabel(optionId, 23, HorizontalAlignment.Center));
+        var inspect = CreateConstructionButton(Localize("constructionInspect"), 0f, 17);
         inspect.Name = "ThermalVortexDraftInspectButton";
         inspect.SetMeta("offerId", optionId);
         inspect.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        inspect.Disabled = packageIds is null && entry is null;
+        inspect.Disabled = entry is null;
         inspect.Pressed += () =>
         {
             if (!CanUseDraftChoice(panel, state, optionId))
                 return;
-            if (packageIds is not null)
-                OpenPackagePreview();
-            else if (entry is not null)
+            if (entry is not null)
                 CardInspectionService.TrySchedule(new CardInspectionRequest(Root, [new CardInspectionEntry(entry.Model)], 0, inspect));
         };
         body.AddChild(inspect);
@@ -681,37 +784,21 @@ internal sealed partial class RewardPoolBuilderSession
         choose.Name = "ThermalVortexDraftChooseButton";
         choose.SetMeta("offerId", optionId);
         choose.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        choose.Disabled = packageIds is null && entry is null;
+        choose.Disabled = entry is null;
         choose.Pressed += () =>
         {
             CommitDraftChoice(panel, state, optionId);
         };
         body.AddChild(choose);
 
-        void OpenPackagePreview()
-        {
-            if (packageIds is null || !CanUseDraftChoice(panel, state, optionId))
-                return;
-            ShowConstructionCards(title, packageIds, PackageDescription(),
-                () => CommitDraftChoice(panel, state, optionId, allowModal: true), optionId);
-        }
-
-        string PackageDescription()
-        {
-            if (package is null)
-                return LocalizeCount("constructionGenericPackageDescription", ("Count", packageIds.Count));
-            var description = RewardPoolConstructionCatalog.PackageSynergy(package);
-            return state.PackageVariantsEnabled
-                ? description + "\n" + Localize("constructionPackageVariationHint") : description;
-        }
     }
 
-    private bool CanUseDraftChoice(Control panel, RewardPoolDraftState shown, string optionId, bool allowModal = false)
+    private bool CanUseDraftChoice(Control panel, RewardPoolDraftState shown, string optionId)
     {
         if (_disposed || _closing || _draftOfferCommitInProgress || _viewMode != ViewMode.Draft
             || !IsValid(panel) || !panel.IsInsideTree() || !panel.IsVisibleInTree()
             || !IsValid(_activeViewRoot) || !_activeViewRoot.IsAncestorOf(panel)
-            || (!allowModal && IsValid(_modalRoot)) || IsOwnedCardInspectionVisible())
+            || IsValid(_modalRoot) || IsOwnedCardInspectionVisible())
             return false;
         var current = RewardPoolDraftService.GetState();
         return current is not null && current.SessionId == shown.SessionId && current.Stage == shown.Stage
@@ -722,7 +809,17 @@ internal sealed partial class RewardPoolBuilderSession
             && current.PackageVariantsEnabled == shown.PackageVariantsEnabled
             && current.PackageVariantVersion == shown.PackageVariantVersion
             && (shown.Stage != RewardPoolDraftStage.Packages || SameDraftThemeOffer(current, shown, optionId))
+            && (shown.Stage is not (RewardPoolDraftStage.TransitionPackages or RewardPoolDraftStage.GenericPackages)
+                || SameDraftGenericOffer(current, shown, optionId))
             && current.OfferIds.Contains(optionId, StringComparer.Ordinal);
+    }
+
+    private static bool SameDraftGenericOffer(RewardPoolDraftState current, RewardPoolDraftState shown, string optionId)
+    {
+        var currentOffer = current.GenericPackageOffers.FirstOrDefault(offer => offer.Id == optionId);
+        var shownOffer = shown.GenericPackageOffers.FirstOrDefault(offer => offer.Id == optionId);
+        return currentOffer is not null && shownOffer is not null
+            && currentOffer.CardIds.SequenceEqual(shownOffer.CardIds);
     }
 
     private static bool SameDraftThemeOffer(RewardPoolDraftState current, RewardPoolDraftState shown, string optionId)
@@ -736,14 +833,14 @@ internal sealed partial class RewardPoolBuilderSession
                 && currentOffer.CardIds.SequenceEqual(shownOffer.CardIds);
     }
 
-    private void CommitDraftChoice(Control panel, RewardPoolDraftState shown, string optionId, bool allowModal = false)
+    private void CommitDraftChoice(Control panel, RewardPoolDraftState shown, string optionId)
     {
-        if (!CanUseDraftChoice(panel, shown, optionId, allowModal))
+        if (!CanUseDraftChoice(panel, shown, optionId))
             return;
         _draftOfferCommitInProgress = true;
         try
         {
-            if (!RewardPoolDraftService.TryChoose(optionId, out var error))
+            if (!RewardPoolDraftService.TryChoose(shown.SessionId, optionId, out var error))
             {
                 ShowConstructionNotice(Localize("constructionDraft"), error);
                 return;
@@ -860,7 +957,8 @@ internal sealed partial class RewardPoolBuilderSession
         var available = binding.Host.Size - new Vector2(20f, 16f);
         if (cardSize.X <= 1f || cardSize.Y <= 1f || available.X <= 1f || available.Y <= 1f)
             return;
-        var scale = Math.Clamp(Math.Min(available.X / cardSize.X, available.Y / cardSize.Y), 0.10f, 0.86f);
+        // Match the small card holder used by the native selection grid.
+        var scale = Math.Clamp(Math.Min(available.X / cardSize.X, available.Y / cardSize.Y), 0.10f, 0.8f);
         card.Scale = Vector2.One * scale;
         card.Position = binding.Host.Size * 0.5f;
     }
@@ -884,13 +982,14 @@ internal sealed partial class RewardPoolBuilderSession
         }
     }
 
-    private void AddConstructionBundlePreview(VBoxContainer body, IReadOnlyList<string> ids, string optionId, Action inspect)
+    private void AddConstructionBundlePreview(VBoxContainer body, IReadOnlyList<string> ids, string optionId, string title,
+        Action<Control> choose, Action<Control> inspect)
     {
         var entries = ids.Select(id => _mainById.GetValueOrDefault(id) ?? _extraById.GetValueOrDefault(id))
             .Where(entry => entry is not null).ToArray();
         var host = new Control
         {
-            Name = "ThermalVortexDraftPackageCover", CustomMinimumSize = new Vector2(0f, 300f),
+            Name = "ThermalVortexDraftPackageCover", CustomMinimumSize = new Vector2(0f, 515f),
             SizeFlagsHorizontal = SizeFlags.ExpandFill, ClipContents = true,
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
@@ -902,10 +1001,7 @@ internal sealed partial class RewardPoolBuilderSession
         var representatives = entries.Take(3).Select(entry => (CardModel)entry.Model.MutableClone()).ToArray();
         if (representatives.Length < 2)
         {
-            var fallback = CreateConstructionLabel(string.Join("\n", entries.Select(entry => entry.Title)), 20, HorizontalAlignment.Center);
-            fallback.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            fallback.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-            host.AddChild(fallback);
+            BuildFallback();
             return;
         }
         NCardBundle bundle = null;
@@ -920,18 +1016,24 @@ internal sealed partial class RewardPoolBuilderSession
             var wrapper = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
             host.AddChild(wrapper);
             var binding = new ConstructionBundlePreviewBinding(bundle, host, wrapper);
-            binding.ClickedHandler = _ =>
+            binding.ClickedHandler = _ => choose(bundle.Hitbox);
+            binding.BundleReadyHandler = () =>
             {
-                if (!_disposed && !_closing && _constructionBundlePreviews.Contains(binding)
-                    && host.IsInsideTree() && host.IsVisibleInTree() && !IsValid(_modalRoot)
-                    && IsValid(_activeViewRoot) && _activeViewRoot.IsAncestorOf(host))
-                    inspect();
+                var hitbox = bundle.Hitbox;
+                hitbox.TooltipText = title;
+                hitbox.GuiInput += binding.InspectionInputHandler;
+                // The fan is a single option. Individual cards become
+                // browseable only after opening the full package.
+                foreach (var card in bundle.CardNodes)
+                    MakeManagerCoverPassive(card);
             };
+            binding.InspectionInputHandler = input => HandleInspectionInput(bundle.Hitbox, input);
             binding.ReadyHandler = () => FitConstructionBundlePreview(binding);
             binding.ResizeHandler = () => FitConstructionBundlePreview(binding);
             binding.ExitHandler = () => ReleaseConstructionBundlePreview(binding);
             _constructionBundlePreviews.Add(binding);
             bundle.Clicked += binding.ClickedHandler;
+            bundle.Ready += binding.BundleReadyHandler;
             host.Ready += binding.ReadyHandler;
             host.Resized += binding.ResizeHandler;
             host.TreeExiting += binding.ExitHandler;
@@ -948,9 +1050,27 @@ internal sealed partial class RewardPoolBuilderSession
                 if (binding is not null) ReleaseConstructionBundlePreview(binding);
                 bundle.QueueFree();
             }
-            var fallback = CreateConstructionLabel(string.Join("\n", entries.Take(3).Select(entry => entry.Title)), 20, HorizontalAlignment.Center);
+            BuildFallback();
+        }
+
+        void BuildFallback()
+        {
+            var fallback = CreateConstructionButton(title, 0f, 23);
             fallback.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            fallback.Pressed += () => choose(fallback);
+            fallback.GuiInput += input => HandleInspectionInput(fallback, input);
             host.AddChild(fallback);
+        }
+
+        void HandleInspectionInput(Control control, InputEvent input)
+        {
+            var wantsDetails = input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }
+                || input is not (InputEventMouseButton or InputEventKey { Echo: true })
+                    && input.IsActionPressed(MegaInput.confirm, false, false);
+            if (!wantsDetails)
+                return;
+            control.AcceptEvent();
+            inspect(control);
         }
     }
 
@@ -970,7 +1090,13 @@ internal sealed partial class RewardPoolBuilderSession
     private void ReleaseConstructionBundlePreview(ConstructionBundlePreviewBinding binding)
     {
         if (!_constructionBundlePreviews.Remove(binding)) return;
-        if (IsValid(binding.Bundle)) binding.Bundle.Clicked -= binding.ClickedHandler;
+        if (IsValid(binding.Bundle))
+        {
+            binding.Bundle.Clicked -= binding.ClickedHandler;
+            binding.Bundle.Ready -= binding.BundleReadyHandler;
+            if (IsValid(binding.Bundle.Hitbox))
+                binding.Bundle.Hitbox.GuiInput -= binding.InspectionInputHandler;
+        }
         if (!IsValid(binding.Host)) return;
         binding.Host.Ready -= binding.ReadyHandler;
         binding.Host.Resized -= binding.ResizeHandler;
@@ -1302,6 +1428,38 @@ internal sealed partial class RewardPoolBuilderSession
         return button;
     }
 
+    private static Button CreateDraftActionButton(string text)
+    {
+        var button = CreateButton(text, 184f, 24);
+        button.ClipText = false;
+        if (ResourceLoader.Load<Font>("res://themes/kreon_regular_shared.tres") is { } font)
+            button.AddThemeFontOverride("font", font);
+        FontControlUtils.ApplyLocaleFontSubstitution(button, FontType.Regular, "font");
+        var eventTextColor = new Color(1f, 0.965f, 0.886f);
+        button.AddThemeColorOverride("font_color", eventTextColor);
+        button.AddThemeColorOverride("font_hover_color", eventTextColor);
+        button.AddThemeColorOverride("font_focus_color", eventTextColor);
+        button.AddThemeColorOverride("font_pressed_color", eventTextColor);
+
+        if (ResourceLoader.Load<Texture2D>("res://images/packed/common_ui/event_button.png") is not { } texture)
+            return button;
+        foreach (var (state, tint) in new[]
+        {
+            ("normal", new Color(0.9f, 0.9f, 0.9f)), ("hover", Colors.White),
+            ("pressed", new Color(0.75f, 0.75f, 0.75f)), ("disabled", new Color(0.5f, 0.5f, 0.5f, 0.8f))
+        })
+        {
+            button.AddThemeStyleboxOverride(state, new StyleBoxTexture
+            {
+                Texture = texture, ModulateColor = tint,
+                ContentMarginLeft = 18f, ContentMarginRight = 18f,
+                ContentMarginTop = 6f, ContentMarginBottom = 6f
+            });
+        }
+        button.AddThemeStyleboxOverride("focus", CreateFocusStyle());
+        return button;
+    }
+
     private static void ApplyConstructionFont(Control control)
     {
         const string fontPath = "res://themes/kreon_bold_glyph_space_one.tres";
@@ -1330,6 +1488,8 @@ internal sealed partial class RewardPoolBuilderSession
         public Control Host { get; } = host;
         public Control Wrapper { get; } = wrapper;
         public NCardBundle.ClickedEventHandler ClickedHandler { get; set; }
+        public Action BundleReadyHandler { get; set; }
+        public Control.GuiInputEventHandler InspectionInputHandler { get; set; }
         public Action ReadyHandler { get; set; }
         public Action ResizeHandler { get; set; }
         public Action ExitHandler { get; set; }

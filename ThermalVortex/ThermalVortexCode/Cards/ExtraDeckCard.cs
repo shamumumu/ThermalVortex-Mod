@@ -84,7 +84,7 @@ public abstract class XyzMonsterCard : ExtraDeckCard
             locString.Add("ExtraDeckStatusLine", "");
     }
 
-    protected override PileType GetResultPileTypeForCardPlay()
+    protected override CardLocation GetResultLocationForCardPlay()
     {
         // The native play wrapper determines the result pile before it invokes
         // OnPlay. Preserve this one-play authorization for card-specific summon
@@ -94,7 +94,8 @@ public abstract class XyzMonsterCard : ExtraDeckCard
         var canPlaceOnField = MonsterFieldService.CanPlaceOnField(this);
         MonsterFieldService.UnmarkPending(this, keepFieldOrderReservation: canPlaceOnField);
         IsExtraDeckSummonPlayAuthorized = false;
-        return canPlaceOnField ? MonsterFieldPile.FieldPileType : PileType.Exhaust;
+        var pileType = canPlaceOnField ? MonsterFieldPile.FieldPileType : PileType.Exhaust;
+        return new CardLocation(Owner, pileType, CardPilePosition.Bottom);
     }
 }
 

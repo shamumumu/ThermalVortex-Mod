@@ -102,10 +102,17 @@ internal static class ArcaneScrollCompatibility
     {
         try
         {
-            var options = new CardCreationOptions(candidates, CardCreationSource.Other, CardRarityOddsType.Uniform)
+            var candidateIds = candidates.Select(card => card.Id).ToHashSet();
+            var pools = candidates.Select(card => card.Pool).Distinct().ToArray();
+            var options = new CardCreationOptions(pools, CardCreationSource.Other, CardRarityOddsType.Uniform,
+                    card => candidateIds.Contains(card.Id))
                 .WithFlags(CardCreationFlags.NoUpgradeRoll);
+            if (!candidateIds.SetEquals(options.GetPossibleCards(player).Select(card => card.Id)))
+                return [];
+
             return CardFactory.CreateForReward(player, Math.Min(count, candidates.Count), options)
-                .Where(result => result?.Card is not null && IsValidRareRewardCandidate(result.Card, player))
+                .Where(result => result?.Card is { } card && candidateIds.Contains(card.Id)
+                    && IsValidRareRewardCandidate(card, player))
                 .Take(count)
                 .ToList();
         }

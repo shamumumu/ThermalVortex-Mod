@@ -36,7 +36,7 @@
 
 helper 位置：[NativeKeywordExplanation](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ThermalVortexCard.cs:165>)、[BlockExplanation](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ThermalVortexCard.cs:176>)、[PowerExplanation](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ThermalVortexCard.cs:183>)、[EnergyExplanation](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ThermalVortexCard.cs:189>)。判断解释是否已有时不读取 `card.HoverTips`，避免解释生成过程递归。
 
-卡名提示使用 `CardPreviewExplanation<T>`，不计作关键词文字说明。既有生成、变身预览保持原来的升级匹配：默认随来源升级，显式 `matchSourceUpgrade:false` 保持基础牌，并始终服从目标自身的升级上限。电子嵌合龙和电子龙无限的素材条件使用基础电子龙预览；基础预览用于说明身份，不把可选素材限制为未升级电子龙。电子终结龙的素材条件使用电子怪兽系列说明。融合准备生成的融合、球形体对应的不死鸟，以及不死鸟对应的翼神龙本体仍固定展示基础版本。全部静态调用见下方“全部静态卡牌预览绑定”。
+卡名提示使用 `CardPreviewExplanation<T>`，不计作关键词文字说明。既有生成、变身预览保持原来的升级匹配：默认随来源升级，显式 `matchSourceUpgrade:false` 保持基础牌，并始终服从目标自身的升级上限。电子嵌合龙和电子龙无限的素材条件使用基础电子龙预览；基础预览用于说明身份，不把可选素材限制为未升级电子龙。电子终结龙的素材条件使用电子怪兽系列说明。球形体对应的不死鸟，以及不死鸟对应的翼神龙本体仍固定展示基础版本。全部静态调用见下方“全部静态卡牌预览绑定”。
 
 能力图标旁的解释由 `ThermalVortexPower.ExtraHoverTips` 接入 `PowerExplanationBindings`，按具体能力类型和当前状态生成；复用现有关键词说明与依赖展开、去重规则。已核对的46项能力在中英文普通说明、动态说明及 `choose`、`phoenix`、`ra`、`resolved` 分支中，对有对应解释的词按语义标黄。没有对应词的正文不强行增加标记；隐藏的出牌计数仍不显示图标。见 [能力解释入口](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Powers/ThermalVortexPower.cs:25>)、[PowerExplanationBindings](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Powers/PowerExplanationBindings.cs>)。
 
@@ -129,7 +129,7 @@ helper 位置：[NativeKeywordExplanation](<C:/Users/16014/Documents/简单的�
 
 显示说明：独立于普通主卡组，存放融合怪兽的卡组，不参与抽牌进程。
 
-实现补充：由核心分开保存永久拥有与本战斗剩余条目，含升级与附魔；不进入主卡组，初始导爆1张，拥有上限10。 [Relics/ThermalVortexCore.cs:56](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Relics/ThermalVortexCore.cs:56>)
+实现补充：由核心分开保存永久拥有与本战斗剩余条目，含升级与附魔。初始导爆1张，新增条目写入额外牌组，永久拥有无上限。 [ThermalVortexCore.cs](../ThermalVortexCode/Relics/ThermalVortexCore.cs)
 
 绑定位置：[CyberloadFusion:20](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/CyberloadFusion.cs:20>)；[DogmatikaPunishment:22](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/DogmatikaPunishment.cs:22>)；[ExternalCombustion:26](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ExternalCombustion.cs:26>)；[FutureFusion:22](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/FutureFusion.cs:22>)；[MiracleFusion:19](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/MiracleFusion.cs:19>)；[PotOfExtravagance:24](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/PotOfExtravagance.cs:24>)；[XyzSummon:20](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/XyzSummon.cs:20>)。另由“融合召唤”经[融合解释依赖](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ThermalVortexCard.cs:29>)自动附加；[XyzMonsterCard 公共绑定](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ExtraDeckCard.cs:25>)沿此依赖链覆盖额外怪兽。
 
@@ -611,17 +611,17 @@ IMillenniumPower 单例。本方回合开始求场上实际千年原人 CurrentV
 
 ### 融合的事前准备 · `FusionPreparationPower`
 
-普通说明：你的下回合开始时，获得融合和能量。
+普通说明：你的下回合开始后，从抽牌堆选择怪兽加入手牌，获得能量。
 
-战斗显示：你的下回合开始时，获得{FusionCount}张融合和{EnergyGain}点能量。
+战斗显示：你的下回合开始后，从抽牌堆选{MonsterCount}只怪兽加入手牌，获得{EnergyGain}点能量。
 
 类型：Buff；叠加方式：Counter。
 
-每次 Bind 将非负能量独立入队，本方下回合开始每条生成1张未升级融合到手牌，并取得队列能量总和，然后清空队列并移除。没有登记队列的直接施加用 Amount 作为单条能量后备值。
+每次 Bind 将基础2点或升级3点能量独立入队。自己下回合完成常规抽牌后，每份预约从当前抽牌堆选1只怪兽，将原牌移入手牌。没有候选或手牌已满时，该份能量仍计入总和。发放累计能量后，清空队列并移除能力。没有登记队列的直接施加用 Amount 作为单条能量后备值。
 
-实现：[NewCardPowers.cs:17](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Powers/NewCardPowers.cs:17>)。中英文能力键：`powers/THERMALVORTEX-FUSION_PREPARATION_POWER`；英文标题：Fusion Preparation。
+卡面和能力提示都绑定怪兽与能量说明。中英文能力键为 `powers/THERMALVORTEX-FUSION_PREPARATION_POWER`，英文标题为 Fusion Preparation。 [NewCardPowers.cs:17](<../ThermalVortexCode/Powers/NewCardPowers.cs:17>) · [提示绑定](../ThermalVortexCode/Powers/PowerExplanationBindings.cs)
 
-资源动态参数：`EnergyGain`、`FusionCount`。
+资源动态参数：`EnergyGain`、`MonsterCount`。
 
 ### 未来融合 · `FutureFusionPower`
 
@@ -1060,7 +1060,6 @@ EnemyActionDrawPower按来源实体保存份数，来源不在场即不计活跃
 | `CardPreviewExplanation<CyberDragon>()` | [CyberSymbiosis:19](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/CyberSymbiosis.cs:19>) |
 | `CardPreviewExplanation<CyberLarva>()` | [CyberSymbiosis:20](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/CyberSymbiosis.cs:20>) |
 | `CardPreviewExplanation<CyberLarva>()` | [DarkCyberWorld:24](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/DarkCyberWorld.cs:24>) |
-| `CardPreviewExplanation<XyzSummon>(matchSourceUpgrade: false)` | [FusionPreparation:185](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/NewMainDeckCards.cs:185>) |
 | `CardPreviewExplanation<PhantomSummoningGodExodia>()` | [MillenniumCross:29](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/MillenniumCross.cs:29>) |
 | `CardPreviewExplanation<Slag>()` | [OverloadDraw:207](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/NewMainDeckCards.cs:207>) |
 | `CardPreviewExplanation<ToyBoxToken>()` | [ToyBox:21](<C:/Users/16014/Documents/简单的实验 4t/ThermalVortex/ThermalVortexCode/Cards/ToyBox.cs:21>) |

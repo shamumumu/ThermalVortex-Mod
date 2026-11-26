@@ -12,6 +12,7 @@
 | 能力图标 | `images/powers` 与 `big` 子目录；能力类给出图标名，公共扩展缺图时使用 `power.png`。显示是否生效还取决于实际能力及 UI 绑定。 |
 | 遗物图标 | `images/relics` 与 `big` 子目录；缺图时对应 `relic.png`。 |
 | 角色与地图图标 | `Character/ThermalVortex.cs` 指向 `images/charui` 中的角色图标、选人图标、锁定图标与地图标记。 |
+| 商店卡包与火堆祈祷 | `images/charui/extra_deck_pack.png` 为青铜封边卡包，`images/charui/rest_site_pray.png` 为捧火石手。两张透明图在商店下半槽与原生火堆按钮中显示。 |
 | 战斗立绘 | 角色创建使用 `battle_visual_yugi.png`；`MillenniumPuzzleCharacterArt` 与战斗／商店／休息点补丁按千年积木状态选择立绘，并有加载失败回退。 |
 | 建筑师结尾立绘 | 入场保留原立绘；`ArchitectFirstResponsePatch` 接入首句选项，通过 `ArchitectFirstResponse.AwaitRevealThenAdvance` 在首次回应时调用 `ArchitectYamiRevealVfx.PlayAsync`，于黑幕下将本事件 `EmbeddedCombatRoom` 中武藤游戏的 `YugiSprite` 换为 `ending_visual_yami.png`。当前项目资源已换为用户提供的三张手持卡、另一手自然下垂版，经本地去背景并配准到既有地标。以人物实体高度、中心及鞋底对齐，保留朝向、对白锚点与收尾动作；缺图沿用原立绘。母图、设计要点与透明处理方法见[结尾立绘记录](../../outputs/ending_visual_yami/README.md)。 |
 | 建筑师暗游戏变身 | 首句仅显示“回应”或“另一个我……”一个按钮；点击后沿用原生按钮禁用流程并收起旧气泡，再播放一次全黑 0.25 秒 → 眼光淡入 0.25 秒 → 眼光脉动 0.30 秒 → 暗游戏显形 0.50 秒；动画结束才推进暗游戏回复，四组均采用此时序，后续对话不重复。`ending_visual_yami_eyes.png` 与整图均为 1536×1024、共用坐标并跟随 Sprite 变换及翻转。缺眼图或尺寸不符直接切换静态暗游戏并推进；完成、退出、异常及超时均清理黑幕并结束等待，场景退出后不再推进。立绘保留至收尾挡雷动作开始，不依赖积木完成度。 |
@@ -115,17 +116,18 @@ PNG 在安装打包时会转换为 `.ctex` 并保留 `.png.import` 映射，包�
 
 ## 游戏文字资源
 
-`localization/zhs` 与 `localization/eng` 各有以下七份文件。它们属于游戏资源，当前外部说明不替代或回写它们。
+`localization/zhs` 与 `localization/eng` 各有以下八份文件。它们属于游戏资源，当前外部说明不替代或回写它们。
 
 | 文件 | 用途 | 对应外部说明 |
 | --- | --- | --- |
 | `cards.json` | 卡名、卡面、选牌和额外牌组提示 | 卡牌效果说明、当前实现总表 |
 | `card_keywords.json` | 关键词名称及解释 | 关键词与能力说明 |
 | `powers.json` | 普通／动态能力说明 | 关键词与能力说明 |
-| `static_hover_tips.json` | 固定悬浮提示、吞噬记录等模板 | 关键词与能力说明、玩法系统说明 |
+| `static_hover_tips.json` | 固定悬浮提示、吞噬记录等模板及商店额外牌组卡包 | 关键词与能力说明、玩法系统说明 |
 | `relics.json` | 遗物名称、效果和风味文字 | 玩法系统说明 |
 | `characters.json` | 角色介绍、奖励池构筑及预设界面 | 玩法系统说明 |
 | `ancients.json` | 先古对话及选项 | 玩法系统说明 |
+| `rest_site_ui.json` | 火堆祈祷的标题和提示 | 玩法系统说明 |
 
 `ThermalVortex.json` 的 ID、名称、简介和依赖是 Mod 管理信息。对外名称为武藤游戏；资源键名仍使用既有内部前缀。
 

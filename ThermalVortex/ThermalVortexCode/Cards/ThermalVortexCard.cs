@@ -279,7 +279,7 @@ public abstract class ThermalVortexCard(int cost, CardType type, CardRarity rari
 
         return new HoverTip(
             new LocString("card_keywords", $"{key}.title"),
-            description) { Id = key };
+            description);
     }
 
     private static Player ResolveMillenniumCountOwner(Player owner)
@@ -478,18 +478,18 @@ public abstract class MonsterCard(int cost, CardType type, CardRarity rarity, Ta
         }
     }
 
-    protected override PileType GetResultPileTypeForCardPlay()
+    protected override CardLocation GetResultLocationForCardPlay()
     {
         var canPlaceOnField = EffectTargeting.IsImmediatePlayEvaluation
             ? MonsterFieldService.CanPlaceOnField(this)
             : MonsterFieldService.CanNormalSummonOnField(this);
         MonsterFieldService.UnmarkPending(this, keepFieldOrderReservation: canPlaceOnField);
         if (canPlaceOnField)
-            return MonsterFieldPile.FieldPileType;
+            return new CardLocation(Owner, MonsterFieldPile.FieldPileType, CardPilePosition.Bottom);
 
-        var baseResultPile = base.GetResultPileTypeForCardPlay();
-        if (baseResultPile != PileType.None)
-            return baseResultPile;
+        var baseResult = base.GetResultLocationForCardPlay();
+        if (baseResult.pileType != PileType.None)
+            return baseResult;
 
         // Base power cards leave combat instead of entering a result pile. A
         // power-type monster that lost its field slot during resolution is
@@ -497,9 +497,9 @@ public abstract class MonsterCard(int cost, CardType type, CardRarity rarity, Ta
         if (ExhaustOnNextPlay || Keywords.Contains(CardKeyword.Exhaust))
         {
             ExhaustOnNextPlay = false;
-            return PileType.Exhaust;
+            return baseResult with { pileType = PileType.Exhaust };
         }
 
-        return PileType.Discard;
+        return baseResult with { pileType = PileType.Discard };
     }
 }

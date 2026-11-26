@@ -530,6 +530,7 @@ internal static class ChaosPhantomCopyService
         var copiedPlay = new CardPlay
         {
             Card = host,
+            Player = play.Player,
             Target = target,
             ResultPile = play.ResultPile,
             Resources = play.Resources,

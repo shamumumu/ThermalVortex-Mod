@@ -338,13 +338,13 @@ internal static class SolemnStrikeSummonPatch
 
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.LoseBlock), new Type[]
 {
-    typeof(Creature), typeof(decimal)
+    typeof(PlayerChoiceContext), typeof(Creature), typeof(decimal), typeof(Creature)
 })]
 internal static class SolemnStrikeLoseBlockPatch
 {
     [HarmonyPrefix]
     private static bool NegateBlockLoss(
-        Creature creature,
+        Creature target,
         decimal amount,
         ref Task __result,
         out bool __state)
@@ -354,10 +354,10 @@ internal static class SolemnStrikeLoseBlockPatch
         // make Purulia draw once per hit or let Ash/Solemn preserve the block.
         __state = !MonsterFieldDamageGuard.IsConsumingAttackBlock
             && amount > 0
-            && creature.Block > 0;
+            && target.Block > 0;
         if (!__state
-            || (!SolemnStrikeActionNegation.ShouldNegatePlayerEffect(creature)
-                && !AshBlossomActionNegation.ShouldNegatePlayerEffect(creature)))
+            || (!SolemnStrikeActionNegation.ShouldNegatePlayerEffect(target)
+                && !AshBlossomActionNegation.ShouldNegatePlayerEffect(target)))
             return true;
 
         __result = Task.CompletedTask;
@@ -366,13 +366,13 @@ internal static class SolemnStrikeLoseBlockPatch
 
     [HarmonyPostfix]
     private static void CaptureBlockLoss(
-        Creature creature,
+        Creature target,
         bool __state,
         bool __runOriginal,
         ref Task __result)
     {
         if (__state && __runOriginal && __result is not null)
-            __result = EnemyActionDrawCommandCapture.AfterPlayerNegativeEffect(__result, creature);
+            __result = EnemyActionDrawCommandCapture.AfterPlayerNegativeEffect(__result, target);
     }
 }
 

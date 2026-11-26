@@ -73,11 +73,7 @@ internal static class MillenniumResolution
             : ctx;
     }
 
-    private sealed class InteractiveEntryChoiceContext : PlayerChoiceContext
-    {
-        public override Task SignalPlayerChoiceBegun(PlayerChoiceOptions options) => Task.CompletedTask;
-        public override Task SignalPlayerChoiceEnded() => Task.CompletedTask;
-    }
+    private sealed class InteractiveEntryChoiceContext : BlockingPlayerChoiceContext;
 
     internal static ResolutionHandle EnterPlay(CardModel card, PlayerChoiceContext ctx)
     {

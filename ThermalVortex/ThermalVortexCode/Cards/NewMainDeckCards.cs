@@ -188,17 +188,18 @@ public class HeroArrival : MainDeckCard
 
 public class FusionPreparation : MainDeckCard
 {
+    internal const int BaseEnergyGain = 2;
+    private const int UpgradeEnergyGain = 1;
+
     public override string CustomPortraitPath => "fusion_preparation.png".BigCardImagePath();
     public override string PortraitPath => "fusion_preparation.png".CardImagePath();
     public override string BetaPortraitPath => "fusion_preparation.png".CardImagePath();
-    private int EnergyAmount => CurrentUpgradeLevel > 0 ? 2 : 1;
+    private int EnergyAmount => BaseEnergyGain + (CurrentUpgradeLevel > 0 ? UpgradeEnergyGain : 0);
 
     public FusionPreparation() : base(1, CardType.Skill, CardRarity.Common, TargetType.Self)
     {
-        WithEnergy(1, 1);
-        // This delayed effect always creates the base Fusion card, even when
-        // Fusion Preparation itself is upgraded.
-        WithExplanations(CardPreviewExplanation<XyzSummon>(matchSourceUpgrade: false));
+        WithEnergy(BaseEnergyGain, UpgradeEnergyGain);
+        WithExplanations(KeywordExplanation("THERMALVORTEX-MONSTER"));
     }
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)

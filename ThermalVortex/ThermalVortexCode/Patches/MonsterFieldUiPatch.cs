@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
@@ -52,9 +53,16 @@ internal static class MonsterFieldUiExitTreePatch
     }
 }
 
-[HarmonyPatch(typeof(CombatManager), "EndCombatInternal")]
+[HarmonyPatch]
 internal static class MonsterFieldUiCombatEndPatch
 {
+    private static MethodBase TargetMethod()
+    {
+        var turnStateType = AccessTools.TypeByName("MegaCrit.Sts2.Core.Combat.CombatTurnState");
+        return (turnStateType is null ? null : AccessTools.Method(typeof(CombatManager), "EndCombatInternal", [turnStateType]))
+            ?? AccessTools.Method(typeof(CombatManager), "EndCombatInternal", Type.EmptyTypes);
+    }
+
     private static void Prefix()
     {
         MonsterFieldUi.DetachAll();
@@ -1635,8 +1643,14 @@ internal sealed class MonsterFieldUiState : IDisposable
         }
 
         CardInspectionHoverTips.RegisterTrigger(_root, owner);
-        _hoverTips = NHoverTipSet.CreateAndShow(_root, new CardHoverTip(_displayedCards[index]), HoverTipAlignment.Center);
-        _hoverTips.SetExtraFollowOffset(new Vector2(0f, _currentRootSize.Y + HoverBelowGap));
+        _hoverTips = NHoverTipSet.CreateAndShow(_root, new CardHoverTip(_displayedCards[index]), HoverTipAlignment.None);
+        if (_hoverTips is null)
+            return;
+
+        var bounds = _root.GetGlobalRect();
+        var offset = new Vector2((bounds.Size.X - _hoverTips.Size.X) * 0.5f, bounds.Size.Y + HoverBelowGap);
+        _hoverTips.SetAlignmentBelow(bounds.Position + offset);
+        _hoverTips.SetFollowOwner();
     }
 
     private void HideHover()

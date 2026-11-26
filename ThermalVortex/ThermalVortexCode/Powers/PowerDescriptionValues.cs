@@ -32,8 +32,8 @@ internal static class PowerDescriptionValues
             [Number<MillenniumSleepingTabletPower>("RandomPieceCount", 1, p => p.RandomPieceCount),
              Number<MillenniumSleepingTabletPower>("ChosenPieceCount", 0, p => p.ChosenPieceCount)],
         FusionPreparationPower =>
-            [Number<FusionPreparationPower>("FusionCount", 1, p => p.PendingCardCount),
-             Number<FusionPreparationPower>("EnergyGain", 1, p => p.PendingEnergy)],
+            [Number<FusionPreparationPower>("MonsterCount", 1, p => p.PendingMonsterCount),
+             Number<FusionPreparationPower>("EnergyGain", FusionPreparation.BaseEnergyGain, p => p.PendingEnergy)],
         OverloadedSummonSlotPower =>
             [Number<OverloadedSummonSlotPower>("SlotsToDestroy", OverloadedSummonSlotPower.SlotsToDestroyAtTurnEnd,
                 p => OverloadedSummonSlotPower.SlotsToDestroyAtTurnEnd * p.PendingResolutionCount)],
@@ -83,7 +83,6 @@ internal static class PowerDescriptionValues
 
         private decimal CurrentValue => _power?.IsMutable == true ? read(_power) : BaseValue;
         public override string ToString() => CurrentValue.ToString("0.##", CultureInfo.InvariantCulture);
-        protected override decimal GetBaseValueForIConvertible() => CurrentValue;
     }
 
     private sealed class LiveText<T>(string name, string fallback, Func<T, string> read)

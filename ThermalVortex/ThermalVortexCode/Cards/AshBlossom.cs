@@ -66,10 +66,10 @@ public class AshBlossom : MonsterCard, IMonsterFieldEnterResolvedListener
             ctx, target, 1, host.Owner.Creature, host, false);
     }
 
-    protected override PileType GetResultPileTypeForCardPlay()
+    protected override CardLocation GetResultLocationForCardPlay()
     {
-        var result = base.GetResultPileTypeForCardPlay();
-        if (result != MonsterFieldPile.FieldPileType)
+        var result = base.GetResultLocationForCardPlay();
+        if (result.pileType != MonsterFieldPile.FieldPileType)
         {
             _hasPendingTarget = false;
             _pendingTarget = null;

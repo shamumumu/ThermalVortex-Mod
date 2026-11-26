@@ -19,9 +19,10 @@ internal sealed partial class RewardPoolBuilderSession
     private Button _managerCancelButton;
     private Button _managerConfirmButton;
     private Button _managerOnlineButton;
-    private readonly Dictionary<Guid, Label> _managerChecks = [];
+    private readonly Dictionary<Button, Label> _managerChecks = [];
     private readonly Dictionary<Button, Control> _managerPickups = [];
     private readonly HashSet<Guid> _managerMarkedPresets = [];
+    private readonly HashSet<string> _managerMarkedDrafts = new(StringComparer.Ordinal);
     private RewardPoolManagerGroups _managerGroups;
     private string _managerGroup = string.Empty;
     private string _managerTargetGroup = string.Empty;
@@ -32,6 +33,10 @@ internal sealed partial class RewardPoolBuilderSession
     private ColorRect _builderGlow;
     private string _managerPendingCreationGroup;
     private HashSet<Guid> _managerExistingBeforeCreation;
+
+    private const int DraftHorizontalMargin = 36;
+    private const int DraftTopMargin = 27;
+    private const int DraftBottomMargin = 24;
 
     private enum ManagerBatchOperation { None, Delete, Move, Copy }
 
@@ -45,18 +50,20 @@ internal sealed partial class RewardPoolBuilderSession
     {
         if (!IsValid(_builderChromePanel) || !IsValid(_viewHost)) return;
         var manager = mode == ViewMode.Library;
-        _builderChromePanel.AnchorLeft = manager ? 0f : 0.018f;
-        _builderChromePanel.AnchorTop = manager ? 0f : 0.03f;
-        _builderChromePanel.AnchorRight = manager ? 1f : 0.982f;
-        _builderChromePanel.AnchorBottom = manager ? 1f : 0.97f;
-        _builderChromePanel.AddThemeStyleboxOverride("panel", manager
+        var draft = mode == ViewMode.Draft;
+        var fullScreen = manager || draft;
+        _builderChromePanel.AnchorLeft = fullScreen ? 0f : 0.018f;
+        _builderChromePanel.AnchorTop = fullScreen ? 0f : 0.03f;
+        _builderChromePanel.AnchorRight = fullScreen ? 1f : 0.982f;
+        _builderChromePanel.AnchorBottom = fullScreen ? 1f : 0.97f;
+        _builderChromePanel.AddThemeStyleboxOverride("panel", fullScreen
             ? new StyleBoxFlat { BgColor = Colors.Transparent } : CreateOuterStyle());
-        _viewHost.AddThemeConstantOverride("margin_left", manager ? 0 : 22);
-        _viewHost.AddThemeConstantOverride("margin_top", manager ? 0 : 18);
-        _viewHost.AddThemeConstantOverride("margin_right", manager ? 0 : 22);
-        _viewHost.AddThemeConstantOverride("margin_bottom", manager ? 0 : 18);
+        _viewHost.AddThemeConstantOverride("margin_left", draft ? DraftHorizontalMargin : manager ? 0 : 22);
+        _viewHost.AddThemeConstantOverride("margin_top", draft ? DraftTopMargin : manager ? 0 : 18);
+        _viewHost.AddThemeConstantOverride("margin_right", draft ? DraftHorizontalMargin : manager ? 0 : 22);
+        _viewHost.AddThemeConstantOverride("margin_bottom", draft ? DraftBottomMargin : manager ? 0 : 18);
         if (IsValid(_builderBackdrop)) _builderBackdrop.Visible = !manager;
-        if (IsValid(_builderGlow)) _builderGlow.Visible = !manager;
+        if (IsValid(_builderGlow)) _builderGlow.Visible = !fullScreen;
     }
 
     private void BuildManagerLibraryView(Guid? preferredPresetId)
@@ -73,6 +80,7 @@ internal sealed partial class RewardPoolBuilderSession
         _selectedExtraIds.Clear();
         _managerBatch = ManagerBatchOperation.None;
         _managerMarkedPresets.Clear();
+        _managerMarkedDrafts.Clear();
         _managerChecks.Clear();
         _managerPickups.Clear();
         _presetTiles.Clear();
@@ -204,19 +212,21 @@ internal sealed partial class RewardPoolBuilderSession
         ClearPresetTiles();
         _managerChecks.Clear();
         _managerPickups.Clear();
+        var draftSelected = RewardPoolDraftService.IsSelected;
+        AddStandardPresetTile(!read.Library.ActivePresetId.HasValue && !draftSelected);
         AddManagerCreateTile();
         foreach (var preset in presets)
             AddManagerSavedTile(preset, RewardPoolPresetService.Validate(preset),
-                read.Library.ActivePresetId == preset.Id && !RewardPoolDraftService.IsSelected);
-        var draft = RewardPoolDraftService.GetState();
-        var draftVisible = _managerGroup.Length == 0 && draft is not null
-            && (draft.IsLegacy || draft.Stage != RewardPoolDraftStage.Consumed)
-            && (query.Length == 0 || ConstructionMethodName(RewardPoolConstructionMethod.Draft)
-                .Contains(query, StringComparison.OrdinalIgnoreCase));
-        if (draftVisible) AddManagerDraftTile(draft);
-        _managerPresetCount.Text = (presets.Length + (draftVisible ? 1 : 0)).ToString();
+                read.Library.ActivePresetId == preset.Id && !draftSelected);
+        var drafts = _managerGroup.Length == 0
+            ? RewardPoolDraftService.GetSessions().Where(draft => query.Length == 0
+                || ManagerDraftName(draft).Contains(query, StringComparison.CurrentCultureIgnoreCase)).ToArray()
+            : [];
+        foreach (var draft in drafts)
+            AddManagerDraftTile(draft);
+        _managerPresetCount.Text = (1 + presets.Length + drafts.Length).ToString();
         _managerGroupButton.Text = _managerGroup.Length == 0 ? ManagerText("默认分组", "Default Group") : _managerGroup;
-        _managerEmptyState.Visible = query.Length > 0 && presets.Length == 0 && !draftVisible;
+        _managerEmptyState.Visible = query.Length > 0 && presets.Length == 0 && drafts.Length == 0;
         _managerEmptyState.Text = Localize("managerNoResults");
         if (preferredPresetId.HasValue && presets.Any(preset => preset.Id == preferredPresetId))
             _selectedPresetId = preferredPresetId;
@@ -269,14 +279,7 @@ internal sealed partial class RewardPoolBuilderSession
         name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
         name.MouseFilter = MouseFilterEnum.Ignore;
         button.AddChild(name);
-        var check = CreateLabel("✓", 27, HorizontalAlignment.Center);
-        check.Position = new Vector2(216f, 10f);
-        check.Size = new Vector2(30f, 30f);
-        check.Modulate = ManagerVisualGreen;
-        check.MouseFilter = MouseFilterEnum.Ignore;
-        check.Visible = _managerBatch != ManagerBatchOperation.None && _managerMarkedPresets.Contains(preset.Id);
-        button.AddChild(check);
-        _managerChecks[preset.Id] = check;
+        AddManagerBatchCheck(button);
         BindLibraryAction(button, () =>
         {
             _selectedPresetId = preset.Id;
@@ -303,24 +306,74 @@ internal sealed partial class RewardPoolBuilderSession
         _presetTiles.Add(new PresetTileBinding(LibraryTileKind.Preset, preset.Id, button, active));
     }
 
-    private void AddManagerDraftTile(RewardPoolDraftState state)
+    private static string ManagerDraftName(RewardPoolDraftSessionEntry draft) =>
+        ManagerText($"三选一 #{draft.Number}", $"Draft #{draft.Number}");
+
+    private void AddManagerDraftTile(RewardPoolDraftSessionEntry draft)
     {
-        var button = CreateManagerTile(Localize("constructionContinueDraft"));
-        button.Name = "ManagerDraftSession";
+        var state = draft.State;
+        var sessionId = state.SessionId;
+        var name = ManagerDraftName(draft);
+        var status = state.Stage switch
+        {
+            RewardPoolDraftStage.Complete => ManagerText("已完成", "Complete"),
+            RewardPoolDraftStage.Consumed => ManagerText("已使用", "Used"),
+            _ => ManagerText("进行中", "In progress")
+        };
+        var button = CreateManagerTile($"{name} · {status}");
+        button.Name = "ManagerDraft_" + sessionId;
         var box = CreateDeckBoxDisplay(StatusTone.Normal, false);
         box.CustomMinimumSize = Vector2.Zero;
         box.Position = new Vector2(22f, 25f);
         box.Size = new Vector2(216f, 155f);
         button.AddChild(box);
-        var label = CreateLabel(ConstructionMethodName(RewardPoolConstructionMethod.Draft), 25, HorizontalAlignment.Center);
-        label.Position = new Vector2(10f, 188f);
+        var label = CreateLabel(name, 25, HorizontalAlignment.Center);
+        label.Position = new Vector2(10f, 169f);
         label.Size = new Vector2(240f, 30f);
         label.MouseFilter = MouseFilterEnum.Ignore;
         button.AddChild(label);
-        button.SetMeta("sessionId", state.SessionId);
-        BindLibraryAction(button, OpenDraft);
+        var subtitle = CreateLabel(status, 16, HorizontalAlignment.Center);
+        subtitle.Position = new Vector2(10f, 199f);
+        subtitle.Size = new Vector2(240f, 22f);
+        subtitle.Modulate = MutedColor;
+        subtitle.MouseFilter = MouseFilterEnum.Ignore;
+        button.AddChild(subtitle);
+        AddManagerBatchCheck(button);
+        button.SetMeta("sessionId", sessionId);
+        BindLibraryAction(button, () =>
+        {
+            if (_managerBatch == ManagerBatchOperation.Delete)
+            {
+                if (!_managerMarkedDrafts.Add(sessionId)) _managerMarkedDrafts.Remove(sessionId);
+                UpdateManagerBatchControls();
+                ApplyManagerTileStyles();
+            }
+            else if (_managerBatch == ManagerBatchOperation.None)
+                OpenDraft(sessionId);
+        });
+        button.GuiInput += input =>
+        {
+            if (CanUseLibraryAction(button) && _managerBatch == ManagerBatchOperation.None
+                && input is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true })
+            {
+                ShowManagerDraftActions(draft);
+                _viewport?.SetInputAsHandled();
+            }
+        };
         _presetGrid.AddChild(button);
-        _presetTiles.Add(new PresetTileBinding(LibraryTileKind.Draft, null, button, RewardPoolDraftService.IsSelected));
+        _presetTiles.Add(new PresetTileBinding(LibraryTileKind.Draft, null, button, draft.IsSelected, sessionId));
+    }
+
+    private void AddManagerBatchCheck(Button button)
+    {
+        var check = CreateLabel("✓", 27, HorizontalAlignment.Center);
+        check.Position = new Vector2(216f, 10f);
+        check.Size = new Vector2(30f, 30f);
+        check.Modulate = ManagerVisualGreen;
+        check.MouseFilter = MouseFilterEnum.Ignore;
+        check.Visible = false;
+        button.AddChild(check);
+        _managerChecks.Add(button, check);
     }
 
     private Button CreateManagerTile(string tooltip)
@@ -341,12 +394,15 @@ internal sealed partial class RewardPoolBuilderSession
         foreach (var tile in _presetTiles)
         {
             if (!IsValid(tile.Button)) continue;
-            var marked = tile.PresetId.HasValue && _managerMarkedPresets.Contains(tile.PresetId.Value);
+            var marked = tile.Kind == LibraryTileKind.Draft
+                ? _managerMarkedDrafts.Contains(tile.DraftSessionId)
+                : tile.PresetId.HasValue && _managerMarkedPresets.Contains(tile.PresetId.Value);
             tile.Button.AddThemeStyleboxOverride("normal", CreateManagerTileStyle(false,
                 _managerBatch != ManagerBatchOperation.None ? marked : tile.IsActive));
-            if (tile.PresetId.HasValue && _managerChecks.TryGetValue(tile.PresetId.Value, out var check) && IsValid(check))
+            if (_managerChecks.TryGetValue(tile.Button, out var check) && IsValid(check))
                 check.Visible = _managerBatch != ManagerBatchOperation.None && marked;
-            tile.Button.Disabled = _managerBatch != ManagerBatchOperation.None && tile.Kind != LibraryTileKind.Preset;
+            tile.Button.Disabled = _managerBatch != ManagerBatchOperation.None && tile.Kind != LibraryTileKind.Preset
+                && !(tile.Kind == LibraryTileKind.Draft && _managerBatch == ManagerBatchOperation.Delete);
         }
     }
 

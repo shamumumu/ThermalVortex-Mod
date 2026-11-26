@@ -269,7 +269,7 @@ internal static class EffectTargeting
             return candidates[0];
 
         var choiceId = synchronizer.ReserveChoiceId(owner);
-        await ctx.SignalPlayerChoiceBegun(PlayerChoiceOptions.None);
+        await ctx.SignalPlayerChoiceBegun(owner, PlayerChoiceOptions.None);
         try
         {
             int? selectedIndex;
@@ -378,7 +378,7 @@ internal static class EffectTargeting
         var sourceNode = room.CreatureNodes
             .FirstOrDefault(node => ReferenceEquals(node?.Entity, source));
         var sourceControl = sourceNode?.Hitbox ?? candidateNodes[0].Hitbox;
-        var useController = NControllerManager.Instance?.IsUsingController == true;
+        var useDirectionalNavigation = NControllerManager.Instance?.IsUsingDirectionalNavigation == true;
         var preview = CardEffectPreviewUi.ShowTargeting(room, sourceCard);
         void PreviewHovered(NCreature node) =>
             preview?.SetTarget(node?.Entity is { } target && IsCurrentlyValid(target, isValid)
@@ -427,7 +427,7 @@ internal static class EffectTargeting
             targetManager.StartTargeting(
                 targetType,
                 sourceControl,
-                useController ? TargetMode.Controller : TargetMode.ClickMouseToTarget,
+                useDirectionalNavigation ? TargetMode.Controller : TargetMode.ClickMouseToTarget,
                 () => isOperationValid?.Invoke() == false
                     || !candidates.Any(creature => IsCurrentlyValid(creature, isValid)),
                 node => node is NCreature creatureNode
@@ -437,7 +437,7 @@ internal static class EffectTargeting
             selectionTask = targetManager.SelectionFinished();
             targetManager.TargetingBegan += TargetingInterrupted;
 
-            if (useController)
+            if (useDirectionalNavigation)
             {
                 room.RestrictControllerNavigation(candidateNodes.Select(node => node.Hitbox));
                 var focusedNode = candidateNodes.FirstOrDefault(node =>
@@ -485,7 +485,7 @@ internal static class EffectTargeting
             if (GodotObject.IsInstanceValid(room))
                 room.TreeExiting -= RoomExiting;
             preview?.Release();
-            if (useController && !interrupted.Task.IsCompleted && IsCurrentTargetingRoom(room))
+            if (useDirectionalNavigation && !interrupted.Task.IsCompleted && IsCurrentTargetingRoom(room))
                 room.EnableControllerNavigation();
         }
     }

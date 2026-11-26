@@ -284,6 +284,7 @@ internal static class CardEffectPreviewValues
             baseDamage,
             props,
             card,
+            null,
             ModifyDamageHookType.All,
             target is null && card.TargetType == TargetType.AllEnemies
                 ? CardPreviewMode.MultiCreatureTargeting

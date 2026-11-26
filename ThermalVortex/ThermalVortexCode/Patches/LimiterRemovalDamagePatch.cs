@@ -1,28 +1,30 @@
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using ThermalVortex.ThermalVortexCode.Powers;
 
 namespace ThermalVortex.ThermalVortexCode.Patches;
 
-// Both single-target overloads delegate to this overload. Observe output only
+// Native attacks and single-target damage converge on this overload. Observe output only
 // here so one command never spends its pending boost more than once.
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage), new Type[]
 {
-    typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal),
-    typeof(ValueProp), typeof(Creature), typeof(CardModel)
+    typeof(PlayerChoiceContext), typeof(IEnumerable<DamageTargetData>), typeof(decimal),
+    typeof(ValueProp), typeof(Creature), typeof(CardModel), typeof(CardPlay), typeof(ModifyDamageHookType)
 })]
 internal static class CyberWeldingDamageOutputPatch
 {
     [HarmonyPriority(Priority.First)]
     private static void Prefix(
-        IEnumerable<Creature> __1, decimal __2, ValueProp __3, Creature __4, CardModel __5,
+        IEnumerable<DamageTargetData> __1, decimal __2, ValueProp __3, Creature __4, CardModel __5,
         out IDisposable __state) =>
-        __state = CyberWeldingPower.BeginDamageOutput(__5, __4, __2, __1, __3);
+        __state = CyberWeldingPower.BeginDamageOutput(__5, __4, __2, __1.Select(data => data.target), __3);
 
     private static void Postfix(IDisposable __state, ref Task<IEnumerable<DamageResult>> __result)
     {

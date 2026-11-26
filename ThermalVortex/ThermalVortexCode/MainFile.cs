@@ -26,7 +26,8 @@ public partial class MainFile : Node
         MonsterFieldPile.Register();
         try
         {
-            RewardPoolSetupService.Initialize();
+            // Saved pools validate against cards that are registered after mod initialization.
+            RewardPoolConfigRegistration.Initialize();
         }
         catch (Exception ex)
         {

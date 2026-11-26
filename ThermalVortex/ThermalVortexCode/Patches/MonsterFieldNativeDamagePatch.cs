@@ -9,22 +9,52 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace ThermalVortex.ThermalVortexCode.Patches;
 
-// Track the native implementation, not its forwarding overloads. AsyncLocal
-// depth follows its continuations and excludes attacks started by its hooks.
+// All damage overloads and native attacks reach this implementation. The depth
+// follows its continuations and excludes damage started by its own listeners.
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage),
-    [typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal),
-     typeof(ValueProp), typeof(Creature), typeof(CardModel)])]
+    [typeof(PlayerChoiceContext), typeof(IEnumerable<DamageTargetData>), typeof(decimal),
+     typeof(ValueProp), typeof(Creature), typeof(CardModel), typeof(CardPlay), typeof(ModifyDamageHookType)])]
 internal static class MonsterFieldNativeDamageCallPatch
 {
-    private static void Prefix(out int __state) =>
-        __state = MonsterFieldDamageGuard.EnterNativeDamageCall();
-
-    private static void Postfix(int __state) =>
-        MonsterFieldDamageGuard.RestoreNativeDamageCall(__state);
-
-    private static Exception Finalizer(Exception __exception, int __state)
+    private static bool Prefix(
+        PlayerChoiceContext __0,
+        ref IEnumerable<DamageTargetData> __1,
+        decimal __2,
+        ValueProp __3,
+        Creature __4,
+        CardModel __5,
+        CardPlay __6,
+        ModifyDamageHookType __7,
+        out int? __state,
+        ref Task<IEnumerable<DamageResult>> __result)
     {
-        MonsterFieldDamageGuard.RestoreNativeDamageCall(__state);
+        __state = null;
+        if (__1 is not null && MonsterFieldDamageGuard.CanGuardAttack(__4))
+        {
+            var targets = __1 as IReadOnlyList<DamageTargetData> ?? __1.ToList();
+            __1 = targets;
+            if (targets.Any(data => MonsterFieldDamageGuard.HasFieldGuard(data.target)))
+            {
+                __result = MonsterFieldDamageGuard.GuardNativeDamageAsync(__0, targets, () =>
+                    CreatureCmd.Damage(__0, targets, __2, __3, __4, __5, __6, __7));
+                return false;
+            }
+        }
+
+        __state = MonsterFieldDamageGuard.EnterNativeDamageCall();
+        return true;
+    }
+
+    private static void Postfix(int? __state)
+    {
+        if (__state is { } previous)
+            MonsterFieldDamageGuard.RestoreNativeDamageCall(previous);
+    }
+
+    private static Exception Finalizer(Exception __exception, int? __state)
+    {
+        if (__state is { } previous)
+            MonsterFieldDamageGuard.RestoreNativeDamageCall(previous);
         return __exception;
     }
 }
@@ -104,9 +134,9 @@ internal static class MonsterFieldNativeDamageResultPatch
 [HarmonyPatch(typeof(Hook), nameof(Hook.AfterBlockBroken))]
 internal static class MonsterFieldNativeBlockBrokenPatch
 {
-    private static bool Prefix(Creature __1, ref Task __result)
+    private static bool Prefix(Creature __2, ref Task __result)
     {
-        if (!MonsterFieldDamageGuard.SuppressNativeBlockBroken(__1))
+        if (!MonsterFieldDamageGuard.SuppressNativeBlockBroken(__2))
             return true;
 
         // CreatureCmd.LoseBlock emitted real breaks while resolving the guard.
@@ -117,7 +147,8 @@ internal static class MonsterFieldNativeBlockBrokenPatch
 
 // Explicit block-loss commands inside listeners remain independent events;
 // only the native damage routine's duplicate notification is suppressed.
-[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.LoseBlock), [typeof(Creature), typeof(decimal)])]
+[HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.LoseBlock),
+    [typeof(PlayerChoiceContext), typeof(Creature), typeof(decimal), typeof(Creature)])]
 internal static class MonsterFieldNativeBlockLossCallPatch
 {
     private static void Prefix(out int __state) =>

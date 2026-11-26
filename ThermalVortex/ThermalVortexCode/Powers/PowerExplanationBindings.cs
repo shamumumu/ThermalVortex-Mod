@@ -51,7 +51,7 @@ internal static class PowerExplanationBindings
     private static IEnumerable<string> KeywordKeys(ThermalVortexPower power) => power switch
     {
         SummonRulesPower or FurnaceStartupPower or AliceInWonderlandPower or ToyBoxPower
-            or MillenniumPartnerPower or SharedFatePower or DarkDuelPower
+            or MillenniumPartnerPower or SharedFatePower or DarkDuelPower or FusionPreparationPower
             => ["MONSTER"],
         AshBlossomPower or InfiniteImpermanencePower or SolemnJudgmentPower
             or SolemnWarningPower or SolemnStrikePower or MirrorForcePower
@@ -97,9 +97,6 @@ internal static class PowerExplanationBindings
                 // This rule changes all Cyber Larvae; it does not generate a
                 // card or restrict the affected cards to a particular upgrade.
                 yield return Preview<CyberLarva>();
-                break;
-            case FusionPreparationPower:
-                yield return Preview<XyzSummon>();
                 break;
             case RaTransitionPower transition:
                 var hasPhoenix = power.IsMutable && transition.HasPhoenixTransition;

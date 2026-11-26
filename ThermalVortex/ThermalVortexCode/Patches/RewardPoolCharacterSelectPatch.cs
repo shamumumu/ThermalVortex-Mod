@@ -1024,9 +1024,8 @@ internal static class RewardPoolCharacterSelectionChangedPatch
     [HarmonyPriority(Priority.Last)]
     private static void Postfix(
         NCharacterSelectScreen __instance,
-        NCharacterSelectButton __0,
-        CharacterModel __1) =>
-        RewardPoolCharacterSelectUi.OnCharacterSelected(__instance, __0?.Character ?? __1);
+        NCharacterSelectButton __0) =>
+        RewardPoolCharacterSelectUi.OnCharacterSelected(__instance, __0?.Character);
 }
 
 [HarmonyPatch(typeof(NCharacterSelectScreen), "OnEmbarkPressed")]

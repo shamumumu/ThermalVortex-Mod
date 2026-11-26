@@ -107,16 +107,12 @@ internal static class CardFactoryEventCompatibilityPatch
         yield return ModelDb.Card<ExodiaRightLeg>();
         yield return ModelDb.Card<ExodiaTorso>();
 
-        if (!ShouldBlacklistExtraDeckCards(player, options))
+        if (options.Source != CardCreationSource.Encounter)
             yield break;
 
         foreach (var card in GetPossibleExtraDeckCards(player, options))
             yield return card;
     }
-
-    private static bool ShouldBlacklistExtraDeckCards(Player player, CardCreationOptions options) =>
-        options.Source == CardCreationSource.Encounter
-        || player.GetRelic<ThermalVortexCore>()?.CanAcceptExtraDeckReward == false;
 
     private static IEnumerable<CardModel> GetPossibleExtraDeckCards(Player player, CardCreationOptions options) =>
         options.GetPossibleCards(player).Where(card => card is XyzMonsterCard);

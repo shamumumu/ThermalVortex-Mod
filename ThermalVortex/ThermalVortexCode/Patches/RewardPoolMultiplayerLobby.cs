@@ -52,7 +52,9 @@ public sealed class RewardPoolSharedDraftMessage : ICustomMessage
         reader.ReadBytes(bytes, length);
         Json = Encoding.UTF8.GetString(bytes);
     }
-    public void HandleMessage(ulong senderId) => RewardPoolMultiplayerLobby.Receive(Json, senderId);
+    // The lobby handler owns dispatch on both host and client. BaseLib can also
+    // register its wrapper handler, so dispatching here would handle a packet twice.
+    public void HandleMessage(ulong senderId) { }
 }
 
 internal sealed class RewardPoolSharedDraftEnvelope

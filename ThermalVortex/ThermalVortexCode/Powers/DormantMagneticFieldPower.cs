@@ -32,7 +32,7 @@ public class DormantMagneticFieldPower : ThermalVortexPower
         Flash();
         var blockToLose = Owner.Block - (Owner.Block / 2);
         if (blockToLose > 0)
-            await CreatureCmd.LoseBlock(Owner, blockToLose);
+            await CreatureCmd.LoseBlock(new BlockingPlayerChoiceContext(), Owner, blockToLose, remover: null);
 
         if (Amount <= 1)
             await PowerCmd.Remove(this);

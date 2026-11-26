@@ -3,9 +3,10 @@
   "name": "武藤游戏",
   "author": "Codex",
   "description": "围绕怪兽召唤、场上怪兽与额外牌组特殊召唤构筑的武藤游戏自定义角色。",
-  "version": "v0.1.1",
+  "version": "v0.1.2",
+  "min_game_version": "0.113.1",
   "has_pck": true,
   "has_dll": true,
-  "dependencies": ["BaseLib"],
+  "dependencies": [{"id": "BaseLib", "min_version": "3.4.8"}],
   "affects_gameplay": true
 }

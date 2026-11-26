@@ -48,13 +48,13 @@ public class BrilliantRebootKnight : XyzMonsterCard
             .Where(enemy => enemy?.IsAlive == true)
             .ToList();
         foreach (var enemy in enemies.Where(enemy => enemy.Block > 0))
-            await CreatureCmd.LoseBlock(enemy, enemy.Block);
+            await CreatureCmd.LoseBlock(ctx, enemy, enemy.Block, remover: null);
 
         var damage = UpgradeVarValue("FixedDamage");
         await ThermalVortexCombatVfx.CardAttackAllEnemies(this, damage, 1).Execute(ctx);
 
         if (Owner.Creature.Block > 0)
-            await CreatureCmd.LoseBlock(Owner.Creature, Owner.Creature.Block);
+            await CreatureCmd.LoseBlock(ctx, Owner.Creature, Owner.Creature.Block, remover: null);
 
         await ThermalVortexCommandCompat.ApplyPower<NoBlockPower>(
             ctx, Owner.Creature, 1, Owner.Creature, this, false);

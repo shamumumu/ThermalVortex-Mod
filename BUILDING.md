@@ -2,7 +2,7 @@
 
 本仓库包含当前模组源码与运行时资源。游戏本体、原生游戏 DLL/PCK、本机配置和临时探针不随源码分发。
 
-Windows 开发环境需要 .NET SDK（支持 net9.0）、已安装的《杀戮尖塔 2》，资源打包另需 Godot 4.5.1。BaseLib 3.1.2 与构建工具依赖由项目的 NuGet 配置恢复；游戏 DLL 和 Harmony 从自己的游戏安装目录读取。
+Windows 开发环境需要 .NET SDK（支持 net9.0）、已安装的《杀戮尖塔 2》，资源打包另需 Godot 4.5.1。BaseLib 3.4.8 与构建工具依赖由项目的 NuGet 配置恢复；游戏 DLL 和 Harmony 从自己的游戏安装目录读取。
 
 在仓库根目录执行（把游戏路径换成自己的安装目录）：
 
@@ -17,4 +17,4 @@ $dotnet = (Get-Command dotnet).Source
 
 融合卡框、立绘边框、标题条、类型牌匾和稀有度 Shader 在运行时读取玩家游戏资源；源码和模组包不含这九项原版副本。独立融合预览须先加载合法安装的游戏 PCK。
 
-游玩请下载 Release 的 `Yugi-Mod-v0.1.1.zip`，不要把 GitHub 自动生成的源码压缩包当作可安装模组。
+游玩请下载 Release 的 `Yugi-Mod-v0.1.2.zip`，不要把 GitHub 自动生成的源码压缩包当作可安装模组。

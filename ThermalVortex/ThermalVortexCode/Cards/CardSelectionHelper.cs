@@ -190,7 +190,8 @@ internal static class CardSelectionHelper
             return Confirmed(choices.Take(selectionCount).ToList(), wasPresented: false);
         }
 
-        if (CardSelectCmd.Selector is { } selector)
+        var runManager = RunManager.Instance;
+        if (runManager?.CardSelectorStack?.GetSelector(owner) is { } selector)
         {
             var selected = await selector.GetSelectedCards(choices, min, max);
             return TryResolveSelection(selected, choices, min, max, out var resolved)
@@ -198,7 +199,6 @@ internal static class CardSelectionHelper
                 : Invalidated<T>();
         }
 
-        var runManager = RunManager.Instance;
         var synchronizer = runManager?.PlayerChoiceSynchronizer;
         if (synchronizer is null)
             return Invalidated<T>();
@@ -207,7 +207,7 @@ internal static class CardSelectionHelper
         var choiceBegun = false;
         try
         {
-            await ctx.SignalPlayerChoiceBegun(PlayerChoiceOptions.None);
+            await ctx.SignalPlayerChoiceBegun(owner, PlayerChoiceOptions.None);
             choiceBegun = true;
 
             List<int> taggedIndexes;

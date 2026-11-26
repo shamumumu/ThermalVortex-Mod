@@ -53,7 +53,7 @@ internal static class ThermalVortexCombatVfx
     }
 
     private static AttackCommand ConfigureExplicitAttack(AttackCommand attack, CardModel card, int hitCount) =>
-        attack.WithHitCount(hitCount).FromCard(card).WithHitFx(DefaultHitVfx, null, null);
+        attack.WithHitCount(hitCount).FromCard(card, cardPlay: null).WithHitFx(DefaultHitVfx, null, null);
 
     internal static Task<IEnumerable<DamageResult>> EffectDamageAsync(
         PlayerChoiceContext ctx,
@@ -64,7 +64,7 @@ internal static class ThermalVortexCombatVfx
         CardModel card)
     {
         PlayImpact(target);
-        return CreatureCmd.Damage(ctx, target, damage, props, source, card);
+        return CreatureCmd.Damage(ctx, target, damage, props, source, card, cardPlay: null);
     }
 
     internal static void PlayImpact(Creature target)

@@ -578,24 +578,28 @@ internal sealed partial class RewardPoolBuilderSession : IDisposable
 
     private void AddStandardPresetTile(bool active)
     {
-        var button = CreatePresetTileButton(Localize("summaryStandardCounts"));
+        var button = CreateManagerTile(ManagerText(
+            "使用武藤游戏原有的起始牌组和完整奖励池",
+            "Use Yugi's original starting deck and full reward pool"));
+        button.Name = "ManagerOriginalDeck";
         _standardPresetTile = button;
-        var content = CreatePresetTileContent(button);
-        content.AddChild(CreateTileBadgeRow(
-            active,
-            Localize("managerTileValid"),
-            StatusTone.Success));
-        content.AddChild(CreateDeckBoxDisplay(StatusTone.Success, standard: true));
-        content.AddChild(CreateTileNameLabel(Localize("standardName")));
-        content.AddChild(CreateTileSummaryLabel(Localize("managerStandardTileCounts")));
-        BindLibraryAction(button, () => SelectStandardTile(
-            ensureVisible: true,
-            clearRememberedPreset: true));
-        button.FocusEntered += () =>
-        {
-            if (CanUseLibraryAction(button))
-                SelectStandardTile(ensureVisible: false, clearRememberedPreset: true);
-        };
+        var box = CreateDeckBoxDisplay(StatusTone.Success, standard: true);
+        box.CustomMinimumSize = Vector2.Zero;
+        box.Position = new Vector2(22f, 20f);
+        box.Size = new Vector2(216f, 140f);
+        button.AddChild(box);
+        var name = CreateLabel(ManagerText("原版卡组", "Original Deck"), 25, HorizontalAlignment.Center);
+        name.Position = new Vector2(10f, 165f);
+        name.Size = new Vector2(240f, 30f);
+        name.MouseFilter = MouseFilterEnum.Ignore;
+        button.AddChild(name);
+        var subtitle = CreateLabel(ManagerText("普通玩法", "Standard Play"), 17, HorizontalAlignment.Center);
+        subtitle.Position = new Vector2(10f, 195f);
+        subtitle.Size = new Vector2(240f, 25f);
+        subtitle.Modulate = MutedColor;
+        subtitle.MouseFilter = MouseFilterEnum.Ignore;
+        button.AddChild(subtitle);
+        BindLibraryAction(button, UseStandard);
         _presetGrid.AddChild(button);
         _presetTiles.Add(new PresetTileBinding(
             LibraryTileKind.Standard,
@@ -1936,7 +1940,7 @@ internal sealed partial class RewardPoolBuilderSession : IDisposable
                 RemoveSelectedOccurrence(index);
             Root.GetViewport()?.SetInputAsHandled();
         }
-        else if (inputEvent.IsActionPressed(MegaInput.accept, false, false))
+        else if (inputEvent.IsActionPressed(MegaInput.confirm, false, false))
         {
             if (fromPool && index >= 0 && index < _displayedPoolCards.Count)
                 ScheduleDetail(_displayedPoolCards[index]);
@@ -2321,7 +2325,7 @@ internal sealed partial class RewardPoolBuilderSession : IDisposable
             return false;
 
         return inputEvent.IsActionPressed(MegaInput.select, false, false)
-            || inputEvent.IsActionPressed(MegaInput.accept, false, false);
+            || inputEvent.IsActionPressed(MegaInput.confirm, false, false);
     }
 
     private bool CanInspectEditorCards() =>
@@ -3663,7 +3667,8 @@ internal sealed partial class RewardPoolBuilderSession : IDisposable
         LibraryTileKind Kind,
         Guid? PresetId,
         Button Button,
-        bool IsActive);
+        bool IsActive,
+        string DraftSessionId = null);
 
     private sealed class EditorSnapshot(
         string name,

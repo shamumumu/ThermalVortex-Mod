@@ -23,19 +23,30 @@ internal sealed partial class RewardPoolBuilderSession
             actions.AddChild(button);
         }
         AddMode(ManagerText("一般", "General"), "ManagerCreateGeneral", CreatePreset);
-        AddMode("Genesis", "ManagerCreateGenesis", () =>
-        {
-            var now = DateTime.UtcNow;
-            ShowEditorView(new RewardPoolPresetDraft(Guid.Empty, RewardPoolPresetService.GetDefaultName(),
-                [], [], now, now, RewardPoolConstructionMethod.Genesis));
-        });
+        AddMode("Genesis", "ManagerCreateGenesis", CreateGenesisPreset);
         AddMode(ManagerText("三选一", "Draft"), "ManagerCreateDraft", () =>
         {
             _managerPendingCreationGroup = null;
             _managerExistingBeforeCreation = null;
-            OpenDraft();
+            _managerGroup = string.Empty;
+            StartNewDraft();
         });
         FinishModal(content, actions.GetChild<Control>(0));
+    }
+
+    private void CreateGenesisPreset()
+    {
+        if (!RewardPoolPresetService.TryCreate(RewardPoolPresetService.GetDefaultName(), [], [],
+                out var preset, out var error, RewardPoolConstructionMethod.Genesis))
+        {
+            _managerPendingCreationGroup = null;
+            _managerExistingBeforeCreation = null;
+            ShowOperationError(Localize("managerCreateFailed"), error);
+            return;
+        }
+        _libraryChanged = true;
+        ShowEditorView(preset);
+        AssignManagerCreatedPresetGroup();
     }
 
     // This is organization metadata only. Original SaveEditor and
@@ -102,6 +113,48 @@ internal sealed partial class RewardPoolBuilderSession
         FinishModal(content, actions.GetChild<Control>(0));
     }
 
+    private void ShowManagerDraftActions(RewardPoolDraftSessionEntry draft)
+    {
+        var name = ManagerDraftName(draft);
+        var content = BeginManagerModal(name, string.Empty, out var actions);
+        var open = CreateManagerButton(Localize("managerEdit"), new Vector2(170f, 60f));
+        open.Pressed += () => { CloseModal(); OpenDraft(draft.State.SessionId); };
+        actions.AddChild(open);
+        var delete = CreateManagerButton(Localize("managerDelete"), new Vector2(170f, 60f));
+        delete.Pressed += () =>
+        {
+            CloseModal();
+            ShowChoiceModal(Localize("managerDeleteTitle"), LocalizeValue("managerDeletePrompt", "Name", name),
+                Localize("managerDeleteConfirm"), () =>
+                {
+                    CloseModal();
+                    if (!DeleteManagerDraft(draft.State.SessionId, out var error))
+                        ManagerNotice(error);
+                    else
+                    {
+                        RefreshLibrary(null);
+                        DeferFocus(_createPresetTile);
+                    }
+                }, Localize("managerCancel"), CloseModal, primaryIsDestructive: true);
+        };
+        actions.AddChild(delete);
+        var cancel = CreateManagerButton(Localize("managerCancel"), new Vector2(170f, 60f));
+        cancel.Pressed += CloseModal;
+        actions.AddChild(cancel);
+        FinishModal(content, open);
+    }
+
+    private bool DeleteManagerDraft(string sessionId, out string error)
+    {
+        var wasActive = RewardPoolDraftService.GetSessions()
+            .Any(draft => draft.State.SessionId == sessionId && draft.IsSelected);
+        if (!RewardPoolDraftService.TryDeleteSession(sessionId, out error))
+            return false;
+        _libraryChanged = true;
+        _selectionChanged |= wasActive;
+        return true;
+    }
+
     private void ShowManagerGroups()
     {
         var content = BeginManagerModal(ManagerText("卡组分组", "Deck Groups"), string.Empty, out var actions);
@@ -124,9 +177,6 @@ internal sealed partial class RewardPoolBuilderSession
             var captured = group;
             Add(captured, () => ChangeManagerGroup(captured));
         }
-        // Keep the existing standard-pool choice accessible without adding a
-        // synthetic deck tile or permanent bottom detail panel.
-        Add(Localize("managerUseStandard"), UseStandard);
         Add(Localize("managerCancel"), () => { });
         FinishModal(content, actions.GetChild<Control>(Math.Min(5, actions.GetChildCount() - 1)));
     }
@@ -137,6 +187,7 @@ internal sealed partial class RewardPoolBuilderSession
         _selectedPresetId = null;
         _rememberedPresetId = null;
         _managerMarkedPresets.Clear();
+        _managerMarkedDrafts.Clear();
         RefreshLibrary(null);
         DeferFocus(_createPresetTile);
     }
@@ -211,6 +262,7 @@ internal sealed partial class RewardPoolBuilderSession
         _managerBatch = operation;
         _managerTargetGroup = targetGroup;
         _managerMarkedPresets.Clear();
+        _managerMarkedDrafts.Clear();
         UpdateManagerBatchControls();
         ApplyManagerTileStyles();
         ConfigureManagerFocus();
@@ -220,6 +272,7 @@ internal sealed partial class RewardPoolBuilderSession
     {
         _managerBatch = ManagerBatchOperation.None;
         _managerMarkedPresets.Clear();
+        _managerMarkedDrafts.Clear();
         UpdateManagerBatchControls();
         ApplyManagerTileStyles();
         ConfigureManagerFocus();
@@ -244,7 +297,7 @@ internal sealed partial class RewardPoolBuilderSession
         _managerOnlineButton.Visible = !batch;
         _librarySearch.Visible = !batch;
         _managerConfirmButton.Visible = batch;
-        _managerConfirmButton.Disabled = _managerMarkedPresets.Count == 0;
+        _managerConfirmButton.Disabled = _managerMarkedPresets.Count == 0 && _managerMarkedDrafts.Count == 0;
         _managerConfirmButton.Text = _managerBatch switch
         {
             ManagerBatchOperation.Delete => ManagerText("确认删除", "Confirm Delete"),
@@ -255,15 +308,18 @@ internal sealed partial class RewardPoolBuilderSession
 
     private void ConfirmManagerBatch()
     {
-        if (_managerMarkedPresets.Count == 0 || _managerBatch == ManagerBatchOperation.None) return;
+        if ((_managerMarkedPresets.Count == 0 && _managerMarkedDrafts.Count == 0)
+            || _managerBatch == ManagerBatchOperation.None) return;
         var ids = _managerMarkedPresets.ToArray();
+        var draftIds = _managerMarkedDrafts.ToArray();
         var operation = _managerBatch;
         var target = _managerTargetGroup;
         if (operation != ManagerBatchOperation.Delete) { CommitManagerBatch(operation, ids, target); return; }
+        var count = ids.Length + draftIds.Length;
         var content = BeginManagerModal(Localize("managerDeleteTitle"),
-            ManagerText($"删除选中的 {ids.Length} 个卡组？", $"Delete the {ids.Length} selected decks?"), out var actions);
+            ManagerText($"删除选中的 {count} 个卡组？", $"Delete the {count} selected decks?"), out var actions);
         var confirm = CreateManagerButton(Localize("managerDeleteConfirm"), new Vector2(170f, 60f));
-        confirm.Pressed += () => { CloseModal(); CommitManagerBatch(operation, ids, target); };
+        confirm.Pressed += () => { CloseModal(); CommitManagerBatch(operation, ids, target, draftIds); };
         actions.AddChild(confirm);
         var cancel = CreateManagerButton(Localize("managerCancel"), new Vector2(170f, 60f));
         cancel.Pressed += CloseModal;
@@ -271,7 +327,8 @@ internal sealed partial class RewardPoolBuilderSession
         FinishModal(content, cancel);
     }
 
-    private void CommitManagerBatch(ManagerBatchOperation operation, IReadOnlyList<Guid> ids, string target)
+    private void CommitManagerBatch(ManagerBatchOperation operation, IReadOnlyList<Guid> ids, string target,
+        IReadOnlyList<string> draftIds = null)
     {
         var completed = 0;
         string error = null;
@@ -307,6 +364,12 @@ internal sealed partial class RewardPoolBuilderSession
                 }
             }
         }
+        if (operation == ManagerBatchOperation.Delete && string.IsNullOrEmpty(error) && draftIds is not null)
+            foreach (var sessionId in draftIds)
+            {
+                if (!DeleteManagerDraft(sessionId, out error)) break;
+                completed++;
+            }
         CancelManagerBatch();
         RefreshLibrary(null);
         if (!string.IsNullOrEmpty(error))

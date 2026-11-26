@@ -14,7 +14,7 @@ public class XyzSummon : MainDeckCard
     public override string PortraitPath => "xyz_summon.png".CardImagePath();
     public override string BetaPortraitPath => "xyz_summon.png".CardImagePath();
 
-    public XyzSummon() : base(0, CardType.Skill, CardRarity.Basic, TargetType.Self)
+    public XyzSummon() : base(1, CardType.Skill, CardRarity.Basic, TargetType.Self)
     {
         WithExplanations(
             ExtraDeckExplanation(),

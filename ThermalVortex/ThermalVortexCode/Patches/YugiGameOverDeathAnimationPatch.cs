@@ -39,7 +39,7 @@ internal static class YugiGameOverDeathAnimationPatch
     {
         var result = instructions.ToList();
         var awaitTween = AccessTools.Method(typeof(TweenHelper), nameof(TweenHelper.AwaitFinished),
-            [typeof(Tween), typeof(Node)]);
+            [typeof(Tween), typeof(Node), typeof(CancellationToken)]);
         // The first awaited tween is the native red backstop (also including
         // the event-room fade). Keep the later UI tween and every other native
         // instruction intact; Banner and Continue follow this existing await.
@@ -52,11 +52,18 @@ internal static class YugiGameOverDeathAnimationPatch
         return result;
     }
 
-    private static async Task<bool> AwaitTransitionAndRecall(Tween tween, Node owner)
+    private static async Task<TweenOutcome> AwaitTransitionAndRecall(
+        Tween tween, Node owner, CancellationToken cancellationToken)
     {
-        if (!await TweenHelper.AwaitFinished(tween, owner))
-            return false;
+        var outcome = await TweenHelper.AwaitFinished(tween, owner, cancellationToken);
+        if (outcome != TweenOutcome.Finished)
+            return outcome;
+
         await YugiNativeActionController.PlayPendingGameOverDeaths(owner);
-        return GodotObject.IsInstanceValid(owner) && owner.IsInsideTree();
+        if (!GodotObject.IsInstanceValid(owner))
+            return TweenOutcome.OwnerFreed;
+        if (!owner.IsInsideTree())
+            return TweenOutcome.OwnerExited;
+        return cancellationToken.IsCancellationRequested ? TweenOutcome.Cancelled : TweenOutcome.Finished;
     }
 }

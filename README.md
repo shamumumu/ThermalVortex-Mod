@@ -8,18 +8,18 @@
 
 ## 下载与安装
 
-**[下载 v0.1.1 完整模组包 · Yugi-Mod-v0.1.1.zip](https://github.com/shamumumu/ThermalVortex-Mod/releases/download/v0.1.1/Yugi-Mod-v0.1.1.zip)**
+**[下载 v0.1.2 完整模组包 · Yugi-Mod-v0.1.2.zip](https://github.com/shamumumu/ThermalVortex-Mod/releases/download/v0.1.2/Yugi-Mod-v0.1.2.zip)**
 
 [查看最新发布版本](https://github.com/shamumumu/ThermalVortex-Mod/releases/latest)
 
-请下载上面的 `Yugi-Mod-v0.1.1.zip`。GitHub 自动生成的 `Source code` 压缩包包含模组源码和资源，供开发使用；游玩请使用上述完整模组包。
+请下载上面的 `Yugi-Mod-v0.1.2.zip`。GitHub 自动生成的 `Source code` 压缩包包含模组源码和资源，供开发使用；游玩请使用上述完整模组包。
 
-需要已安装的《杀戮尖塔 2》。压缩包已附带 **BaseLib 3.1.2**，包含以下内容：
+需要已安装的《杀戮尖塔 2》。压缩包已附带 **BaseLib 3.4.8**，包含以下内容：
 
 ```text
 mods/
 ├─ ThermalVortex/    # 角色模组：DLL、JSON、PCK
-└─ BaseLib/          # 必需基础库：DLL、JSON、PCK
+└─ BaseLib/          # 必需基础库及配套兼容助手
 安装说明.txt
 THIRD_PARTY_NOTICES.md
 licenses/LICENSE-BaseLib.txt
@@ -27,7 +27,7 @@ licenses/LICENSE-BaseLib.txt
 
 1. **先退出游戏。** 在 Steam 中右键《杀戮尖塔 2》，通过“管理 → 浏览本地文件”打开游戏根目录。
 2. 解压下载的 ZIP，将其中的 `mods` 文件夹合并到游戏根目录。最终应为 `游戏根目录/mods/ThermalVortex/ThermalVortex.dll`，不要放成 `mods/mods/ThermalVortex`。
-3. 确认 `BaseLib` 只保留一份。已有 BaseLib 时，检查其他目录或创意工坊中是否存在重复副本；本包提供的配套版本为 3.1.2，不要直接覆盖其他模组所需的新版 BaseLib。
+3. 确认 `BaseLib` 只保留一份。已有 BaseLib 时，检查其他目录或创意工坊中是否存在重复副本。本包提供 BaseLib 3.4.8 和配套兼容助手。已有满足要求的完整 BaseLib 时，只需复制 `ThermalVortex`。
 4. 启动游戏，按游戏提示启用模组，选择“武藤游戏”开始新局。
 
 升级模组时也请先退出游戏。角色的显示名称为“武藤游戏”，文件夹和内部标识仍使用 `ThermalVortex`。
@@ -69,12 +69,12 @@ licenses/LICENSE-BaseLib.txt
 
 | 项目 | 本次发布信息 |
 |---|---|
-| 模组版本 | v0.1.1 |
-| 游戏环境 | Windows / Steam，v0.107.1，commit `59260271` |
-| 配套基础库 | BaseLib 3.1.2 |
-| 本次检查 | 74 项托管检查通过；72 项融合资源加载与渲染检查通过；构建及包文件核对完成 |
+| 模组版本 | v0.1.2 |
+| 游戏环境 | Windows / Steam，构建使用 v0.114.0（`a7b9a9c0`），模组清单最低版本 0.113.1 |
+| 配套基础库 | BaseLib 3.4.8 |
+| 本次检查 | Release 编译、Godot 资源打包和 ZIP 文件核对完成 |
 
-本次发布的按钮点击与返回流程尚未完成实机验收，未新增联机验收。上述环境是本次构建所依据的版本，不承诺其他游戏版本或其他模组组合的兼容性。
+本次发布未进行游戏内或联机验收。联机参与者请使用相同的游戏、武藤游戏和 BaseLib 版本。
 
 ## 制作与资源
 

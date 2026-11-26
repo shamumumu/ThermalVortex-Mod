@@ -238,6 +238,7 @@ public class RelinquishedControlPower : ThermalVortexPower, IMonsterFieldLeaveLi
     public override async Task AfterDeath(
         PlayerChoiceContext ctx,
         Creature creature,
+        CardModel cardSource,
         bool wasRemovalPrevented,
         float deathAnimLength)
     {

@@ -46,9 +46,9 @@ public static partial class CharacterSelectFullArtPatch
 
     [HarmonyPostfix]
     [HarmonyPriority(Priority.Last)]
-    public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0, CharacterModel __1)
+    public static void Postfix(NCharacterSelectScreen __instance, NCharacterSelectButton __0)
     {
-        Apply(__instance, __0?.Character ?? __1);
+        Apply(__instance, __0?.Character);
     }
 
     public static void Apply(NCharacterSelectScreen screen, CharacterModel character = null)
